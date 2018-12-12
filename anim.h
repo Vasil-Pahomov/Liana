@@ -3,7 +3,6 @@
 #include <Adafruit_NeoPixel.h>
 #include "palette.h"
 
-#define PIN 0 // WS2812 pin number
 #define LEDS 50 // number of LEDs in the strip 
 #define BRIGHTNESS 256// brightness adjustment, up to 256
 
@@ -22,6 +21,8 @@
 class Anim {
     
 private:
+    bool initialized;
+    
     //Color arrays - two for making transition
     static Color leds1[LEDS];
     static Color leds2[LEDS];

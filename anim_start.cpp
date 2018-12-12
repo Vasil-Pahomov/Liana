@@ -1,7 +1,7 @@
 #include "anim.h"
 
 void Anim::animStart_SetUp() {
-    Serial1.print(F("(start)"));
+    Serial.print(F("(start)"));
     phase = 0;
 }
 
