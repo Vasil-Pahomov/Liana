@@ -111,6 +111,8 @@ private:
     void animFly_SetUp();
     void animFly_Run();
 
+    void animMagic_SetUp();
+    void animMagic_Run();
 public:
 
 

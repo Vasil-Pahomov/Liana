@@ -1,3 +1,5 @@
+#include <WebSocketsServer.h>
+
 #include "palette.h"
 
 #include "anim.h"
@@ -7,14 +9,15 @@
 #include <ESP8266WebServer.h>
 #include <ESP8266mDNS.h>
 
-#define ANIMS 7 //number of animations (not including start one)
+
+#define ANIMS 7 //number of animations (not including start one) to cycle randomly
 #define PALS 8 //number of palettes
 #define INTERVAL 30000 //change interval, msec
 
 //#define USE_START_ANIMATION //start animation is used in cycling as well as other animations
 
-#define WIFI_SSID "YOUR-SSID"
-#define WIFI_PASS "YOUR-PASS"
+#define WIFI_SSID "WiFiKVNR2"
+#define WIFI_PASS "R@dm!la V@r0n!ca"
 
 Palette * pals[PALS] = {&PalRgb, &PalRainbow, &PalRainbowStripe, &PalParty, &PalHeat, &PalFire, &PalIceBlue, &PalXMas};
 
@@ -26,13 +29,13 @@ int paletteInd = random(PALS);
 int animInd = 0;
 
 ESP8266WebServer server(80);
+WebSocketsServer webSocket(81); 
 
 const char HTML[] PROGMEM = 
 "<!DOCTYPE HTML><html lang=\"ru-RU\"><head><meta charset=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><script>const ESP_SRV=\"\";let suspendTimer;function suspend(){sendCmd(\"/sus\").then(function(response){return response.json();}).then(function(data){document.body.style.display=\"\";document.getElementById('animSelect').value=data.a;document.getElementById('palSelect').value=data.p;console.log(\"a=\" + data.a + \",p=\" + data.p);document.getElementById('onBox').checked=(data.a >=0);document.getElementById('mainControls').style.display=(data.a >=0) ? '' : 'hidden';});}function onAnimPalChange(){sendCmd(\"/set?a=\" + document.getElementById('animSelect').value + \"&p=\" + document.getElementById('palSelect').value);}function sendCmd(url){if (suspendTimer){clearTimeout(suspendTimer);}return fetch(ESP_SRV + url).then(function(response){if (response.ok){suspendTimer=window.setTimeout(suspend, 5000);return response;}else{throw new Error();}}).catch(function(err){alert('Error communicating!');suspendTimer=window.setTimeout(suspend, 500);throw new Error(err);});;}function onOnBoxChange(){var mainControlsDiv=document.getElementById('mainControls'); if (document.getElementById('onBox').checked){mainControlsDiv.style.display='';document.getElementById('animSelect').value=0;onAnimPalChange();}else{mainControlsDiv.style.display='none';sendCmd(\"/set?a=-1&p=\" + document.getElementById('palSelect').value);}}document.addEventListener(\"DOMContentLoaded\", start);function start(){suspend();}</script><style>body{font-size:200%;font-family: Arial;}select{width: 100%;font-size:100%;margin: 10px 0;border: solid 2px;}</style></head><body style=\"display:none\"><label><input type=\"checkbox\" id=\"onBox\" onchange=\"onOnBoxChange()\"/>Включить</label><div id=\"mainControls\"><select id=\"animSelect\" onchange=\"onAnimPalChange()\"><option value=\"0\">Начальная</option><option value=\"1\">Бег</option><option value=\"2\">Пыльца эльфов</option><option value=\"3\">Вспышки</option><option value=\"4\">Случайный цикл</option><option value=\"5\">Звезды</option><option value=\"6\">Полосы</option><option value=\"7\">Полет</option></select><select id=\"palSelect\" onchange=\"onAnimPalChange()\"><option value=\"0\">RGB</option><option value=\"1\">Радуга</option><option value=\"2\">Полосатая радуга</option><option value=\"3\">Вечеринка</option><option value=\"4\">Жара</option><option value=\"5\">Огонь</option><option value=\"6\">Лёд</option><option value=\"7\">Рождество</option></select></div></body></html>";
 
 void setup() {
-    Serial.begin(115200);
-
+  Serial.begin(115200);
   Serial.println("Entering setup");
   randomSeed(analogRead(0)*analogRead(1));
   anim.setAnim(animInd);
@@ -40,6 +43,17 @@ void setup() {
   anim.setPalette(pals[0]);
   anim.doSetUp();
 
+  setupWiFi();
+  
+  setupHttpServer();
+
+  setupSocket();
+
+  Serial.println("Setup done");
+}
+
+void setupWiFi()
+{
   WiFi.begin(WIFI_SSID, WIFI_PASS);
 
  // ждем соединения:
@@ -49,7 +63,10 @@ void setup() {
   }
 
   Serial.print("IP address: ");Serial.println(WiFi.localIP());
+}
 
+void setupHttpServer()
+{
   //index page
   server.on("/", HTTP_GET, []{
       server.send(200, "text/html", HTML);
@@ -65,9 +82,14 @@ void setup() {
   server.on("/set",[](){ setEffect(); });
   
   server.begin();
-
-  Serial.println("Setup done");
 }
+
+void setupSocket()
+{
+  webSocket.begin();
+  webSocket.onEvent(webSocketEvent);
+}
+
 
 void loop() {
   yield();
@@ -127,6 +149,10 @@ void loop() {
   yield();
 
   server.handleClient();
+
+  yield();
+
+  webSocket.loop();
 }
 
 void sustainEffect() {
@@ -167,3 +193,19 @@ void setEffect() {
     server.sendHeader("Access-Control-Allow-Origin","*");
     server.send(200,"text/html", "");
  }
+ 
+void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght) { 
+  switch (type) {
+    case WStype_DISCONNECTED:             // if the websocket is disconnected
+      Serial.printf("[%u] Disconnected!\n", num);
+      break;
+    case WStype_CONNECTED: {              // if a new websocket connection is established
+        IPAddress ip = webSocket.remoteIP(num);
+        Serial.printf("[%u] Connected from %d.%d.%d.%d url: %s\n", num, ip[0], ip[1], ip[2], ip[3], payload);
+      }
+      break;
+    case WStype_TEXT:                     // if new text data is received
+      Serial.printf("[%u] get Text: %s\n", num, payload);
+      break;
+  }
+}

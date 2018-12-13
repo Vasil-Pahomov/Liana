@@ -128,7 +128,11 @@ void Anim::setAnim(byte animInd)
             setUpImpl = &Anim::animSpread_SetUp;
             runImpl = &Anim::animSpread_Run;
             setUpOnPalChange = false;
-        break;     
+        break;
+        case 100://special "magic" animation
+            setUpImpl = &Anim::animMagic_SetUp;
+            runImpl = &Anim::animMagic_Run;
+            setUpOnPalChange = false;
         case 7: 
             setUpImpl = &Anim::animFly_SetUp;
             runImpl = &Anim::animFly_Run;
