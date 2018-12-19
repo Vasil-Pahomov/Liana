@@ -3,8 +3,8 @@
 #include <Adafruit_NeoPixel.h>
 #include "palette.h"
 
-#define LEDS 50 // number of LEDs in the strip 
-#define BRIGHTNESS 256// brightness adjustment, up to 256
+#define LEDS 100 // number of LEDs in the strip 
+#define BRIGHTNESS 64// brightness adjustment, up to 256
 
 #define TRANSITION_MS 1000 // transition time between animations, ms
 
@@ -42,6 +42,7 @@ private:
     // millis to transition end
     unsigned long transms;
 
+    //animation-specific variables
     int phase;
     int pos;
     int inc;
@@ -122,6 +123,9 @@ public:
     void setAnim(byte animInd);
     void run();
     void doSetUp();
+    void setMagicParams(byte ind, byte position, byte color, boolean isBoom);
+    
+    
 
 };
 

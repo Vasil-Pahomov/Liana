@@ -1,0 +1,160 @@
+<!DOCTYPE HTML>
+<html lang="ru-RU">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+const ESP_SRV = "http://192.168.0.22";
+const ESP_WS = "ws://192.168.0.22:81/"; /* "ws://" + location.hostname + ":81/" */
+let suspendTimer;
+let bAng, gAng;
+let preAcc;
+var connection = new WebSocket(ESP_WS, ['arduino']);
+
+function suspend()
+{
+	sendCmd("/sus")
+	.then(function(response) {
+		return response.json();
+	})
+	.then(function(data) {
+		document.body.style.display = "";
+		document.getElementById('animSelect').value = data.a;
+		document.getElementById('palSelect').value = data.p;
+		console.log("a=" + data.a + ",p=" + data.p);
+		document.getElementById('onBox').checked = (data.a >= 0);
+		document.getElementById('mainControls').style.display = (data.a >= 0) ? '' : 'hidden';
+	});
+}
+
+function onAnimPalChange() {
+	sendCmd("/set?a=" + document.getElementById('animSelect').value + "&p=" + document.getElementById('palSelect').value);
+}
+
+function sendCmd(url) {
+	if (suspendTimer) {
+		clearTimeout(suspendTimer);
+	}
+	
+	return fetch(ESP_SRV + url)
+	.then(function(response) {
+		if (response.ok) {
+			suspendTimer = window.setTimeout(suspend, 5000);
+			return response;
+		} else {
+			throw new Error();
+		}
+	})
+	.catch(function(err) {
+		alert('Error communicating!');
+		suspendTimer = window.setTimeout(suspend, 500);
+		throw new Error(err);
+	});;
+
+}
+
+function onOnBoxChange() {
+	var mainControlsDiv = document.getElementById('mainControls'); 
+	if (document.getElementById('onBox').checked) {
+		mainControlsDiv.style.display = '';
+		document.getElementById('animSelect').value = 0;
+		onAnimPalChange();
+	} else {
+		mainControlsDiv.style.display = 'none';
+		sendCmd("/set?a=-1&p=" + document.getElementById('palSelect').value);
+	}
+}
+
+
+function handleOrientation(e) {
+	if (e.beta > -45 && e.beta < 45) {
+		bAng = Math.floor((Number(e.beta) + 45)*255/90); 
+		gAng = Math.floor((Number(e.gamma) + 90)*255/180); 
+		let pos = bAng + (gAng << 8);
+		connection.send('P' + pos.toString());
+	}
+}
+
+function handleMotion(e) {
+	if (preAcc > 10 && e.acceleration.y < 10) {
+		sendBoom();
+	}
+	preAcc = e.acceleration.y;
+}
+
+function sendBoom() {
+	let pos = bAng + (gAng << 8);
+	connection.send('B' + pos.toString());
+	console.log('Boom!');
+}
+
+document.addEventListener("DOMContentLoaded", start);
+
+function start() {
+
+	connection.onopen = function () {
+		connection.send('Connect ' + new Date());
+	};
+	connection.onerror = function (error) {
+		console.log('WebSocket Error ', error);
+	};
+	connection.onmessage = function (e) {
+		console.log('Server: ', e.data);
+	};
+	connection.onclose = function () {
+		console.log('WebSocket connection closed');
+	};
+
+	window.addEventListener("deviceorientation", handleOrientation, true);
+	window.addEventListener("devicemotion", handleMotion, true);
+
+	suspend();
+}
+
+
+</script>
+
+<style>
+body {
+	font-size:200%;
+	font-family: Arial;
+}
+
+select {
+	width: 100%;
+	font-size:100%;
+	margin: 10px 0;
+	border: solid 2px;
+}
+</style>
+
+</head>
+<body style="display:none">
+	<label><input type="checkbox" id="onBox" onchange="onOnBoxChange()"/>Включить</label>
+	<div id="mainControls">
+		<select id="animSelect" onchange="onAnimPalChange()">
+			<option value="0">Начальная</option>
+			<option value="1">Бег</option>
+			<option value="2">Пыльца эльфов</option>
+			<option value="3">Вспышки</option>
+			<option value="4">Случайный цикл</option>
+			<option value="5">Звезды</option>
+			<option value="6">Полосы</option>
+			<option value="7">Полет</option>
+			<option value="100">Магия</option>
+		</select>
+		<select id="palSelect" onchange="onAnimPalChange()">
+			<option value="0">RGB</option>
+			<option value="1">Радуга</option>
+			<option value="2">Полосатая радуга</option>
+			<option value="3">Вечеринка</option>
+			<option value="4">Жара</option>
+			<option value="5">Огонь</option>
+			<option value="6">Лёд</option>
+			<option value="7">Рождество</option>
+		</select>
+		<button onclick="sendBoom()">BOOM!</button>
+	</div>
+	<div id="log"/>
+</body>
+</html>
