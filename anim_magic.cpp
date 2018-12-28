@@ -67,7 +67,6 @@ void Anim::animMagic_Run() {
 
     if (amdata[i].boomPhase > 0) {
       int boomdisp = (BOOM_PHASES - amdata[i].boomPhase)*BOOM_WIDTH;
-      Serial.printf("BOOM: P=%d, pos=%d, disp=%d",amdata[i].boomPhase, amdata[i].boomPos, boomdisp);Serial.println();
       for (int j=0;j<BOOM_WIDTH;j++) {
         int upos = amdata[i].boomPos + boomdisp + j;
         int dpos = amdata[i].boomPos - boomdisp - j;
