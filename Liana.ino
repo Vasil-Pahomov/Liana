@@ -1,23 +1,19 @@
 #include <WebSocketsServer.h>
-
 #include "palette.h"
-
 #include "anim.h"
-
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
 #include <ESP8266mDNS.h>
 
+#define WIFI_SSID "YOUR_SSID"
+#define WIFI_PASS "YOUR_PASS"
 
 #define ANIMS 7 //number of animations (not including start one) to cycle randomly
 #define PALS 8 //number of palettes
 #define INTERVAL 30000 //change interval, msec
 
 //#define USE_START_ANIMATION //start animation is used in cycling as well as other animations
-
-#define WIFI_SSID "WiFiKVNR2"
-#define WIFI_PASS "R@dm!la V@r0n!ca"
 
 #define WIFI_AP_SSID "Liana"
 #define WIFI_AP_PASS "ws2812"
@@ -74,6 +70,12 @@ void setupWiFi()
   }
 
   Serial.print("IP address: ");Serial.println(WiFi.localIP());
+
+   if (MDNS.begin("liana")) {
+    Serial.println("mDNS responder started");
+  } else {
+    Serial.println("Error setting up MDNS responder!");
+  }
 }
 
 void setupHttpServer()
