@@ -11,26 +11,11 @@ void webSetup()
       webServer.send(200, "text/html", HTML);
   });
 
-  //sustains current effect for next INTERVAL. Returns JSON with current animation index and palette index:
-  // {'a':ANIMATION_INDEX,'b':'PALETTE_INDEX'}
-  // negative animation index means the strip is powered off
-  webServer.on("/sus",[](){ webSustainEffect(); });
-
   //sets effect and palette. Inputs two parameters: a=ANIMATION_INDEX&b=PALETTE_INDEX
   //negative animation index turns the strip off
   webServer.on("/set",[](){ webSetEffect(); });
   
   webServer.begin();
-}
-
-void webSustainEffect() {
-    char buf[100];
-    sprintf(buf, "{\"a\":%d,\"p\":%d}", animInd, paletteInd);
-    if (animInd > 0) {
-      ms = millis() + INTERVAL; //"reset" duration for any animation except start
-    }
-    webServer.sendHeader("Access-Control-Allow-Origin","*");
-    webServer.send(200,"text/html", buf);
 }
 
 void webSetEffect() {
