@@ -1,5 +1,5 @@
-#define WIFI_SSID "WiFiKVNR2"
-#define WIFI_PASS "R@dm!la V@r0n!ca"
+#define WIFI_SSID "YOUR_SSID"
+#define WIFI_PASS "YOUR_PASS"
 
 #define WIFI_AP_SSID "Liana"
 #define WIFI_AP_PASS "ws2812"

@@ -5,6 +5,8 @@
 #include <ESP8266WebServer.h>
 #include <WebSocketsServer.h>
 #include <ESP8266mDNS.h>
+#include <WiFiUdp.h>
+#include <ArduinoOTA.h>
 
 
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -33,10 +35,9 @@ void setup() {
   Serial.println("Entering setup");
 
   wifiSetUp();
-  
   webSetup();
-
   wsSetup();
+  otaSetUp();
 
   randomSeed(analogRead(0)*analogRead(1));
   anim.setAnim(animInd);
@@ -69,8 +70,6 @@ void loop() {
 
   anim.run();
   
-  yield();
-  
   if (millis() > ms && animInd != 255) {// animind == 255 is for turned off strip - it never ends automatically
     ms = millis() + INTERVAL; 
     switch ( (animInd < 0) ? 0 : random(1)) {
@@ -102,13 +101,11 @@ void loop() {
   }
   /**/
 
-  yield();
-
   webRun();
 
-  yield();
-
   wsRun();
+
+  otaRun();
 
 }
 
