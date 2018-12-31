@@ -6,17 +6,17 @@
 #include <WebSocketsServer.h>
 #include <ESP8266mDNS.h>
 
-#define WIFI_SSID "WiFiKVNR2"
-#define WIFI_PASS "R@dm!la V@r0n!ca"
+#define WIFI_SSID "YOUR_SSID"
+#define WIFI_PASS "YOUR_PASS"
+
+#define WIFI_AP_SSID "Liana"
+#define WIFI_AP_PASS "ws2812"
 
 #define ANIMS 7 //number of animations (not including start one) to cycle randomly
 #define PALS 8 //number of palettes
 #define INTERVAL 30000 //change interval, msec
 
 //#define USE_START_ANIMATION //start animation is used in cycling as well as other animations
-
-#define WIFI_AP_SSID "Liana"
-#define WIFI_AP_PASS "ws2812"
 
 Palette * pals[PALS] = {&PalRgb, &PalRainbow, &PalRainbowStripe, &PalParty, &PalHeat, &PalFire, &PalIceBlue, &PalXMas};
 
