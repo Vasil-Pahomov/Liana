@@ -6,11 +6,10 @@
 #include <WebSocketsServer.h>
 #include <ESP8266mDNS.h>
 
-#define WIFI_SSID "YOUR_SSID"
-#define WIFI_PASS "YOUR_PASS"
 
-#define WIFI_AP_SSID "Liana"
-#define WIFI_AP_PASS "ws2812"
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//!! Be sure to set up your WiFi network name and password in the wifi.ino file !!
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 #define ANIMS 7 //number of animations (not including start one) to cycle randomly
 #define PALS 8 //number of palettes

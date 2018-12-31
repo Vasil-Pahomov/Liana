@@ -4,8 +4,8 @@
 1. Set up Arduino IDE to work with ESP as described [here](https://randomnerdtutorials.com/how-to-install-esp8266-board-arduino-ide/)
 1. Install [NeoPixelBus](https://github.com/Makuna/NeoPixelBus) library (typically you search for "NeoPixelBus by Makuna" in the library manager and install it from there)
 1. Clone the repository (or download and unpack ZIP)
-1. Open Liana.ino
-1. Change YOUR_SSID and YOUR_PASS at the beginning of Liana.ino to name and password of your WiFi network
+1. Open Liana.ino in the Arduino IDE
+1. Look for wifi.ino file. Change YOUR_SSID and YOUR_PASS there to match name and password of your WiFi network
 1. Upload the sketch
 
 ## Wiring
@@ -24,8 +24,8 @@ Note: this certainly works for mobile devices, not for laptops!
 1. Настройте Arduino IDE для работы с ESP2866 как описано, например [здесь](http://geekmatic.in.ua/Arduino_IDE_with_WiFi_ESP8266)
 1. Установите библиотеку [NeoPixelBus](https://github.com/Makuna/NeoPixelBus) (обычно достаточно найти "NeoPixelBus by Makuna" в менеджере библиотек Arduino IDE и установить обычным образом)
 1. Склонируйте репозиторий или распакуйте скачанный ZIP-архив
-1. Откройте Liana.ino
-1. Поменяйте YOUR_SSID и YOUR_PASS в начале скетча Liana.ino на имя и пароль вашей сети WiFi
+1. Откройте Liana.ino в Arduino IDE
+1. Найдите файл wifi.ino. Поменяйте там YOUR_SSID и YOUR_PASS на имя и пароль вашей сети WiFi
 1. Загрузите скетч
 
 ## Подключение

@@ -1,3 +1,9 @@
+#define WIFI_SSID "WiFiKVNR2"
+#define WIFI_PASS "R@dm!la V@r0n!ca"
+
+#define WIFI_AP_SSID "Liana"
+#define WIFI_AP_PASS "ws2812"
+
 void wifiSetUp()
 {
   WiFi.begin(WIFI_SSID, WIFI_PASS);
