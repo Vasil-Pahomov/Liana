@@ -5,8 +5,8 @@
 1. Install [NeoPixelBus](https://github.com/Makuna/NeoPixelBus) library (typically you search for "NeoPixelBus by Makuna" in the library manager and install it from there)
 1. Install [WebSockets library](https://github.com/Links2004/arduinoWebSockets/tree/ATmega): download ZIP file and add it to the sketch with Arduino IDE (Sketch menu -> Include library -> Add .ZIP library...)
 1. Clone the repository (or download and unpack ZIP)
-1. Open Liana.ino
-1. Change YOUR_SSID and YOUR_PASS at the beginning of Liana.ino to name and password of your WiFi network
+1. Change WIFI_SSID and WIFI_PASS defines at the beginning of Liana.ino from default values (YOUR_SSID and YOUR_PASS) to name and password of your WiFi network
+1. Set number of LEDs in your strip in the LEDS define at the beginning of anim.h
 1. Upload the sketch
 
 ## Wiring
@@ -26,8 +26,8 @@ Note: this certainly works for mobile devices, not for laptops!
 1. Установите библиотеку [NeoPixelBus](https://github.com/Makuna/NeoPixelBus) (обычно достаточно найти "NeoPixelBus by Makuna" в менеджере библиотек Arduino IDE и установить обычным образом)
 1. Установите библиотеку [WebSockets](https://github.com/Links2004/arduinoWebSockets/tree/ATmega): скачайте файл ZIP и добавьте его в скетч (меню Sketch -> Include library -> Add .ZIP library...)
 1. Склонируйте репозиторий или распакуйте скачанный ZIP-архив
-1. Откройте Liana.ino
-1. Поменяйте YOUR_SSID и YOUR_PASS в начале скетча Liana.ino на имя и пароль вашей сети WiFi
+1. Поменяйте значения дефайнов WIFI_SSID и WIFI_PASS в начале скетча Liana.ino со значений по умолчанию (YOUR_SSID и YOUR_PASS) на имя и пароль вашей сети WiFi
+1. Задайте число светодиодов в вашей ленте в дефайне LEDS в начале файла anim.h.
 1. Загрузите скетч
 
 ## Подключение
