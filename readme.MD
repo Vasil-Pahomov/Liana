@@ -8,7 +8,7 @@
 1. Change WIFI_SSID and WIFI_PASS defines at the beginning of Liana.ino from default values (YOUR_SSID and YOUR_PASS) to name and password of your WiFi network
 1. Set number of LEDs in your strip in the LEDS define at the beginning of anim.h
 1. Upload the sketch
-
+You can see how it looks like [here](https://youtu.be/if178oluID4) and [here](https://youtu.be/ZXqNeq31DUs)
 ## Wiring
 ![enter image description here](https://raw.githubusercontent.com/Vasil-Pahomov/Liana/master/Diagram.png)
 Here example of NodeMCU is shown, but you can use any ESP8266 board. You power the board, power the WS2812 chain, and connect GPIO2 output of ESP to the data input of the firsh WS2812 in chain, that's all.
