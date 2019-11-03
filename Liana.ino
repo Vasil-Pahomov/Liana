@@ -5,9 +5,7 @@
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
 #include <ESP8266mDNS.h>
-
-#define WIFI_SSID "YOUR_SSID"
-#define WIFI_PASS "YOUR_PASS"
+#include <DNSServer.h>
 
 #define ANIMS 7 //number of animations (not including start one) to cycle randomly
 #define PALS 8 //number of palettes
@@ -15,20 +13,35 @@
 
 //#define USE_START_ANIMATION //start animation is used in cycling as well as other animations
 
+#define WIFI_SSID "WiFiKVNR2"         //SSID (Name) of your WiFi network
+#define WIFI_PASS "R@dm!la V@r0n!ca"         //Password of your WiFi network
+#define WIFI_CONNECTION_TIMEOUT 5000  //Timeout (in milliseconds) of waiting for WiFi connection
+
 #define WIFI_AP_SSID "Liana"
-#define WIFI_AP_PASS "ws2812"
+#define MDNS_NAME "liana"
+
+#define DNS_PORT 53
+IPAddress apIP(192, 168, 4, 1);
 
 Palette * pals[PALS] = {&PalRgb, &PalRainbow, &PalRainbowStripe, &PalParty, &PalHeat, &PalFire, &PalIceBlue, &PalXMas};
 
 Anim anim = Anim();
 
-unsigned long ms = 10000;//startup animation duration, 10000 for "release" AnimStart
+unsigned long ms = 10000;//startup animation duration
 
 int paletteInd = random(PALS);
 int animInd = 0;
 
+//not sure this is really necessary, since state should be found from the inside of WiFi class.
+#define WIFISTATE_CONNECTING 0
+#define WIFISTATE_CONNECTED 1
+#define WIFISTATE_SOFTAP 2
+byte wifiState;
+
+
 ESP8266WebServer server(80);
 WebSocketsServer webSocket(81); 
+DNSServer dnsServer;
 
 const char HTML[] PROGMEM = 
 "<!DOCTYPE HTML> <html lang=ru-RU> <head> <meta charset=\"utf-8\"/> <meta name=viewport content=\"width=device-width, initial-scale=1.0\"> <script>const ESP_WS=\"ws://\"+location.hostname+\":81/\";let suspendTimer;let bAng,gAng;let preAcc;let wsconn;function suspend()\n{if(wsconn.readyState==wsconn.OPEN){wsconn.send('I');console.log('Info request sent');}else{console.log('Wrong state while sending info request: '+wsconn.readyState);}\nwindow.setTimeout(suspend,5000);}\nfunction onAnimPalChange(){let anim=Number(document.getElementById('animSelect').value);let pal=Number(document.getElementById('palSelect').value);let data=(anim<<8)+pal;console.log(data.toString(16));wsconn.send('S'+data.toString(16));if(anim==100){window.addEventListener(\"deviceorientation\",handleOrientation,true);window.addEventListener(\"devicemotion\",handleMotion,true);}else{window.removeEventListener(\"deviceorientation\",handleOrientation,true);window.removeEventListener(\"devicemotion\",handleMotion,true);}}\nfunction onOnBoxChange(){var mainControlsDiv=document.getElementById('mainControls');if(document.getElementById('onBox').checked){mainControlsDiv.style.display='';document.getElementById('animSelect').value=0;onAnimPalChange();}else{mainControlsDiv.style.display='none';wsconn.send('SFF00');}}\nfunction handleOrientation(e){if(e.beta>-45&&e.beta<45){bAng=Math.floor((Number(e.beta)+45)*255/90);gAng=Math.floor((Number(e.gamma)+90)*255/180);let pos=bAng+(gAng<<8);wsconn.send('P '+pos.toString(16));}}\nfunction handleMotion(e){if(preAcc>10&&e.acceleration.y<10){sendBoom();}\npreAcc=e.acceleration.y;}\nfunction sendBoom(){let pos=bAng+(gAng<<8);wsconn.send('PB'+pos.toString(16));console.log('Boom!');}\nfunction connectws(){wsconn=new WebSocket(ESP_WS,['arduino'])\ndocument.getElementById('dscon').innerText='Соединение...';wsconn.onopen=function(){suspend();document.getElementById('dscon').style.display='none';document.getElementById('allc').style.display='';};wsconn.onerror=function(error){console.log('WS error'+error);};wsconn.onmessage=function(e){console.log('Server: ',e.data);if(e.data.charAt(0)=='I'){let ai=parseInt(e.data.substring(1,3),16);let pi=parseInt(e.data.substring(4,6),16);document.getElementById('onBox').checked=(ai!=255);document.getElementById('animSelect').value=ai;document.getElementById('palSelect').value=pi;console.log(\"a=\"+ai+\",p=\"+pi);}};wsconn.onclose=function(){console.log('onclose');document.getElementById('dscon').style.display='';document.getElementById('allc').style.display='none';document.getElementById('dscon').innerText='Нет связи, повтор...';window.setTimeout(connectws,1000);};}\ndocument.addEventListener(\"DOMContentLoaded\",start);function start(){connectws();}</script> <style>body{font-size:200%;font-family:Arial}select{width:100%;font-size:100%;margin:10px 0;border:solid 2px}</style> </head> <body> <div id=dscon>Соединение...</div> <div id=allc style=display:none> <label><input type=checkbox id=onBox onchange=\"onOnBoxChange()\"/>Включить</label> <div id=mainControls> <select id=animSelect onchange=onAnimPalChange()> <option value=0>Начальная</option> <option value=1>Бег</option> <option value=2>Пыльца эльфов</option> <option value=3>Вспышки</option> <option value=4>Случайный цикл</option> <option value=5>Звезды</option> <option value=6>Полосы</option> <option value=7>Полет</option> <option value=100>Магия</option> </select> <select id=palSelect onchange=onAnimPalChange()> <option value=0>RGB</option> <option value=1>Радуга</option> <option value=2>Полосатая радуга</option> <option value=3>Вечеринка</option> <option value=4>Жара</option> <option value=5>Огонь</option> <option value=6>Лёд</option> <option value=7>Рождество</option> </select> </div> </div> </body> </html>";
@@ -39,10 +52,6 @@ void setup() {
 
   setupWiFi();
   
-  setupHttpServer();
-
-  setupSocket();
-
   randomSeed(analogRead(0)*analogRead(1));
   anim.setAnim(animInd);
   anim.setPeriod(20);
@@ -55,27 +64,49 @@ void setup() {
 
 void setupWiFi()
 {
+  wifiState = WIFISTATE_CONNECTING;
+  
   WiFi.begin(WIFI_SSID, WIFI_PASS);
 
- // ждем соединения:
-  while (WiFi.status() != WL_CONNECTED && millis() < 30000) {
-    delay(500);
-    Serial.print(".");
-  }
-  
-  if (millis() >= 30000) {
+}
+
+void setupWiFiLoop()
+{
+  if (wifiState != WIFISTATE_CONNECTING) return;
+
+  if (millis() > WIFI_CONNECTION_TIMEOUT) {
     WiFi.disconnect();
     Serial.println("Fallback to Access Point");
-    WiFi.softAP(WIFI_AP_SSID, WIFI_AP_PASS);
+    WiFi.mode(WIFI_AP);
+    WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
+    WiFi.softAP(WIFI_AP_SSID);
+    //setting up captive portal
+    dnsServer.start(DNS_PORT, "*", apIP);
+    server.onNotFound([]() {
+      server.send(200, "text/html", HTML);
+    });    
+    finishWiFiSetup();
+    wifiState = WIFISTATE_SOFTAP;
+  } else 
+    if (WiFi.status() == WL_CONNECTED) {
+    finishWiFiSetup();
+    wifiState = WIFISTATE_CONNECTED;
   }
+}
 
+void finishWiFiSetup()
+{
+  anim.run();
   Serial.print("IP address: ");Serial.println(WiFi.localIP());
-
-   if (MDNS.begin("liana")) {
+  if (MDNS.begin(MDNS_NAME)) {
     Serial.println("mDNS responder started");
   } else {
     Serial.println("Error setting up MDNS responder!");
   }
+  anim.run();
+  setupSocket();
+  anim.run();
+  setupHttpServer();
 }
 
 void setupHttpServer()
@@ -157,13 +188,17 @@ void loop() {
   }
   /**/
 
+  setupWiFiLoop();
+  
   yield();
 
-  server.handleClient();
-
-  yield();
-
-  webSocket.loop();
+  if (wifiState != WIFISTATE_CONNECTING) {
+    server.handleClient();
+    yield();
+    webSocket.loop();
+    yield();
+    dnsServer.processNextRequest();
+  }
 }
 
 //sets animation and palette to values specified in animInd and paletteInd, 

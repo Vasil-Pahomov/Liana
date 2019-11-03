@@ -5,10 +5,15 @@
 1. Install [NeoPixelBus](https://github.com/Makuna/NeoPixelBus) library (typically you search for "NeoPixelBus by Makuna" in the library manager and install it from there)
 1. Install [WebSockets library](https://github.com/Links2004/arduinoWebSockets/tree/ATmega): download ZIP file and add it to the sketch with Arduino IDE (Sketch menu -> Include library -> Add .ZIP library...)
 1. Clone the repository (or download and unpack ZIP)
-1. Change WIFI_SSID and WIFI_PASS defines at the beginning of Liana.ino from default values (YOUR_SSID and YOUR_PASS) to name and password of your WiFi network
+1. If you wish to connect Liana to your home WiFi, you change WIFI_SSID and WIFI_PASS defines at the beginning of Liana.ino from default values (YOUR_SSID and YOUR_PASS) to name and password of your WiFi network. However, it's fully operational standalone.
 1. Set number of LEDs in your strip in the LEDS define at the beginning of anim.h
 1. Upload the sketch
+1. If you have connected Liana to your WiFi, open "http://liana.local" in web browser of any iOS, MacOS or Windows device on the same network. This does not work for Android however, you should find IP address of the Liana (e.g. in your router admin console, or using https://play.google.com/store/apps/details?id=com.dokoden.dotlocalfinder). Then type "http://<IP_ADDRESS>" in Android browser.
+1. If you didn't connect Liana to your WiFi, just connect from any device to "Liana" wireless network and tap on pop-up authorization panel. You'll be brought directly to the Liana web interface. But you'll lost Internet connection on your device.
 You can see how it looks like [here](https://youtu.be/if178oluID4) and [here](https://youtu.be/ZXqNeq31DUs)
+
+Note: "Magic" effect works only on mobile devices (since it uses accelerometer), and does not work in Chrome (thanks Google, they disabled access to device sensors in non-https sites)
+
 ## Wiring
 ![enter image description here](https://raw.githubusercontent.com/Vasil-Pahomov/Liana/master/Diagram.png)
 Here example of NodeMCU is shown, but you can use any ESP8266 board. You power the board, power the WS2812 chain, and connect GPIO2 output of ESP to the data input of the firsh WS2812 in chain, that's all.
@@ -26,9 +31,13 @@ Note: this certainly works for mobile devices, not for laptops!
 1. Установите библиотеку [NeoPixelBus](https://github.com/Makuna/NeoPixelBus) (обычно достаточно найти "NeoPixelBus by Makuna" в менеджере библиотек Arduino IDE и установить обычным образом)
 1. Установите библиотеку [WebSockets](https://github.com/Links2004/arduinoWebSockets/tree/ATmega): скачайте файл ZIP и добавьте его в скетч (меню Sketch -> Include library -> Add .ZIP library...)
 1. Склонируйте репозиторий или распакуйте скачанный ZIP-архив
-1. Поменяйте значения дефайнов WIFI_SSID и WIFI_PASS в начале скетча Liana.ino со значений по умолчанию (YOUR_SSID и YOUR_PASS) на имя и пароль вашей сети WiFi
+1. Если хотите подключть модуль к домашней сети WiFi, поменяйте значения дефайнов WIFI_SSID и WIFI_PASS в начале скетча Liana.ino со значений по умолчанию (YOUR_SSID и YOUR_PASS) на имя и пароль вашей сети WiFi. Модуль полностью работоспособен и без подключения к сети.
 1. Задайте число светодиодов в вашей ленте в дефайне LEDS в начале файла anim.h.
 1. Загрузите скетч
+1. Если Вы подключили модуль к WiFi, то в браузере устройства, подключенного к той же сети, наберите "http://liana.local". Это работает только с Apple-устройствами и Windows. Для подключения к модулю из Android нужно узнать IP-адрес модуля (это можно сделать в админке роутера или с помощью приложения https://play.google.com/store/apps/details?id=com.dokoden.dotlocalfinder)
+1. Если вы не подключались к WiFi, то с любого устройства подсоединитесь к беспроводной сети "Liana" и нажмите на всплывающем сообщении об авторизации. Вам сразу же откроется web-интерфейс модуля. Однако на устройстве пропадёт интернет
+
+Важно: Эффект "Магия" работает только на мобильных устройствах (используется акселерометр), и НЕ работает в Chrome (спасибо Google, они зарезали доступ к датчикам устройства на не-https сайтах)
 
 ## Подключение
 Картинка есть вверху. Там показано подключение модуля NodeMCU, но можно использовать любой другой модуль с ESP8266. Подключаете питание к модулю, ленте светодиодов WS2812, и соединяете выход GPIO2 ESP со входом, данных первого светодиода в ленте, всё.
