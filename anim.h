@@ -1,6 +1,5 @@
 #ifndef anim_h
 #define anim_h
-#include <Adafruit_NeoPixel.h>
 #include "palette.h"
 
 #define LEDS 100 // number of LEDs in the strip 

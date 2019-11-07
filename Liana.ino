@@ -1,12 +1,16 @@
 #include "palette.h"
 #include "anim.h"
+
+#include <WebSocketsServer.h>
 #include <ESP8266WiFi.h>
+#include <ESP8266WiFiMulti.h>
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
-#include <WebSocketsServer.h>
 #include <ESP8266mDNS.h>
+#include <DNSServer.h>
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
+
 
 
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -35,9 +39,6 @@ void setup() {
   Serial.println("Entering setup");
 
   wifiSetUp();
-  webSetup();
-  wsSetup();
-  otaSetUp();
 
   randomSeed(analogRead(0)*analogRead(1));
   anim.setAnim(animInd);
@@ -101,11 +102,7 @@ void loop() {
   }
   /**/
 
-  webRun();
-
-  wsRun();
-
-  otaRun();
+  wifiLoop();
 
 }
 

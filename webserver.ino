@@ -10,6 +10,10 @@ void webSetup()
   webServer.on("/", HTTP_GET, []{
       webServer.send(200, "text/html", HTML);
   });
+  
+  webServer.onNotFound([]() {
+    webServer.send(200, "text/html", HTML);
+  });    
 
   //sets effect and palette. Inputs two parameters: a=ANIMATION_INDEX&b=PALETTE_INDEX
   //negative animation index turns the strip off

@@ -4,7 +4,7 @@
 #include "anim.h"
 #include "brightness.h"
 
-NeoPixelBus<NeoGrbFeature, NeoEsp8266Uart800KbpsMethod> strip(LEDS, 2);//note that pin number is ignored for this method
+NeoPixelBus<NeoGrbFeature, NeoEsp8266Uart1800KbpsMethod> strip(LEDS, 2);//note that pin number is ignored for this method
 
 Anim::Anim() 
 {
