@@ -2,7 +2,7 @@
 #define anim_h
 #include "palette.h"
 
-#define LEDS 100 // number of LEDs in the strip 
+#define LEDS 150 // number of LEDs in the strip 
 #define BRIGHTNESS 255// brightness adjustment, up to 256
 
 #define TRANSITION_MS 1000 // transition time between animations, ms
