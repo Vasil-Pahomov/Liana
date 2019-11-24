@@ -11,9 +11,13 @@
 ## How to compile (advanced)
 1. Set up Arduino IDE to work with ESP as described [here](https://randomnerdtutorials.com/how-to-install-esp8266-board-arduino-ide/) Note to install 2.5.2 version of ESP8266 board (2.6.0 does not work, not sure why)
 1. Install libraries (all can be found in the library manager)
+
 	[NeoPixelBus by Makuna](https://github.com/Makuna/NeoPixelBus)
+
 	[WebSockets library by Markus Sattler](https://github.com/Links2004/arduinoWebSockets)
+
 	[SPIFFSReadServer by Ryan Downing] (https://github.com/r-downing/SPIFFSReadServer)
+
 	[PerfWiFiManager by Ryan Downing] (https://github.com/r-downing/PersWiFiManager)
 1. Clone the repository (or download and unpack ZIP)
 1. Set number of LEDs in your strip in the LEDS define at the beginning of anim.h
