@@ -16,9 +16,9 @@
 
 	[WebSockets library by Markus Sattler](https://github.com/Links2004/arduinoWebSockets)
 
-	[SPIFFSReadServer by Ryan Downing] (https://github.com/r-downing/SPIFFSReadServer)
+	[SPIFFSReadServer by Ryan Downing](https://github.com/r-downing/SPIFFSReadServer)
 
-	[PerfWiFiManager by Ryan Downing] (https://github.com/r-downing/PersWiFiManager)
+	[PerfWiFiManager by Ryan Downing](https://github.com/r-downing/PersWiFiManager)
 1. Clone the repository (or download and unpack ZIP)
 1. Set number of LEDs in your strip in the LEDS define at the beginning of anim.h
 1. Compile it!
