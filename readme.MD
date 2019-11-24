@@ -1,7 +1,7 @@
 # ESP8266/WS2812 Light Animation
 ## How to start
 1. Connect your ESP, LED strip and power source as shown below (Wiring)
-1. Upload binary files: [program file](https://raw.githubusercontent.com/Vasil-Pahomov/Liana/master/bin/liana.ino.bin) at 0x000000, and [SPIFFS file](https://raw.githubusercontent.com/Vasil-Pahomov/Liana/master/bin/liana.spiffs.bin) at 0x100000. You should adjust settings for your board, particuarly COM port number, flash size, and SPI mode. I used official Flash download tools (can be found [here](https://www.espressif.com/en/support/download/other-tools)), and my working settings for NodeMCU board looked like this:
+1. Upload binary files: [program file](https://github.com/Vasil-Pahomov/Liana/raw/master/bin/Liana.ino.bin) at 0x000000, and [SPIFFS file](https://github.com/Vasil-Pahomov/Liana/raw/master/bin/Liana.spiffs.bin) at 0x100000. You should adjust settings for your board, particuarly COM port number, flash size, and SPI mode. I used official Flash download tools (can be found [here](https://www.espressif.com/en/support/download/other-tools)), and my working settings for NodeMCU board looked like this:
 
 ![Flash download tools settings](https://raw.githubusercontent.com/Vasil-Pahomov/Liana/master/pics/Download_tool_settings.png)
 
