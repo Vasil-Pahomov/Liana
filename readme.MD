@@ -20,8 +20,9 @@
 
 	[PerfWiFiManager by Ryan Downing](https://github.com/r-downing/PersWiFiManager)
 1. Clone the repository (or download and unpack ZIP)
+1. Upload data files to SPIFFS with [the plugin](https://github.com/esp8266/arduino-esp8266fs-plugin)
 1. Set number of LEDs in your strip in the LEDS define at the beginning of anim.h
-1. Compile it!
+1. Compile and run the sketch
 
 ## Wiring
 ![Wiring diagram](https://raw.githubusercontent.com/Vasil-Pahomov/Liana/master/pics/Diagram.png)
