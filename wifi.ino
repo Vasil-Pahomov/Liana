@@ -2,12 +2,13 @@
 #define WIFI_CONNECTION_TIMEOUT 10000  //Timeout (in milliseconds) of waiting for WiFi connection
 #define MDNS_NAME "liana"
 
-SPIFFSReadServer webServer(80);
 DNSServer dnsServer;
 PersWiFiManager persWM(webServer, dnsServer);
 
 void wifiSetUp()
 {
+  webSetup();
+  
   SPIFFS.begin();
 
   persWM.onConnect([]() {
@@ -17,10 +18,7 @@ void wifiSetUp()
   persWM.onAp([](){
     Serial.println("AP MODE");
   });
-
   
-  SPIFFS.begin();
-
   //sets network name for AP mode
   persWM.setApCredentials(WIFI_AP_SSID);
 
@@ -29,11 +27,9 @@ void wifiSetUp()
 
   //in non-blocking mode, program will continue past this point without waiting
   persWM.begin();
-
-  webServer.begin();
   
   wsSetup();
-  otaSetUp();
+  otaSetup();
 }
 
 void wifiLoop()

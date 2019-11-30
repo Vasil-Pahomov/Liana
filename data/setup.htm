@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+	<title>Liana Setup</title>
+	<link rel="stylesheet" type="text/css" href="s.css?v1">
+</head>
+
+<body>
+	<div style='text-align:left;display:inline-block;width:320px;padding:5px'>
+		<form method='post' action='/setup'>
+			<label>Number of LEDs {{LEDS}}
+				<input type='number' min='1' max='1024' id='leds' name='leds' placeholder='Number of LEDs' value='{{leds}}'>
+			</label>
+			<br><br>
+
+			<button type='submit'>Apply</button>
+		</form>
+		<br>
+		<a href="javascript:history.back()">Back</a> | 
+		<a href="/">Home</a>
+	</div>
+</body>
+
+</html>

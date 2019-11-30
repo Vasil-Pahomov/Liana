@@ -1,3 +1,4 @@
+
 #include "palette.h"
 #include "anim.h"
 
@@ -11,6 +12,8 @@
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
 #include <PersWiFiManager.h>
+#include <EspHtmlTemplateProcessor.h>
+#include <FileReader.h>
 
 
 

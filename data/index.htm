@@ -3,9 +3,10 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" type="text/css" href="s.css?v1">
 <script>
-//const ESP_WS = "ws://192.168.0.22:81/"; 
-const ESP_WS = "ws://" + location.hostname + ":81/" 
+const ESP_WS = "ws://192.168.4.1:81/"; 
+//const ESP_WS = "ws://" + location.hostname + ":81/" 
 let suspendTimer;
 let bAng, gAng;
 let preAcc;
@@ -111,20 +112,6 @@ function start() {
 
 </script>
 
-<style>
-body {
-	font-size:200%;
-	font-family: Arial;
-}
-
-select {
-	width: 100%;
-	font-size:100%;
-	margin: 10px 0;
-	border: solid 2px;
-}
-</style>
-
 </head>
 <body>
 	<div id="dscon">Connecting...</div>
@@ -154,6 +141,7 @@ select {
 			</select>
 		</div>
 	</div>
+	<a href="setup.htm">Liana settings</a> |
 	<a href="wifi.htm">WiFi settings</a>
 </body>
 </html>
