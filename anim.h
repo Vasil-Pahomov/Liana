@@ -2,7 +2,8 @@
 #define anim_h
 #include "palette.h"
 
-#define LEDS 150 // number of LEDs in the strip 
+#define MAXLEDS 1024 // maximum number of LEDs in the strip TODO: switch to dynamic arrays to save RAM
+
 #define BRIGHTNESS 255// brightness adjustment, up to 256
 
 #define TRANSITION_MS 1000 // transition time between animations, ms
@@ -21,12 +22,14 @@ class Anim {
     
 private:
     bool initialized;
+
+    int ledsNum;//actual number of LEDs
     
     //Color arrays - two for making transition
-    static Color leds1[LEDS];
-    static Color leds2[LEDS];
+    static Color leds1[MAXLEDS];
+    static Color leds2[MAXLEDS];
     //auxiliary colors array
-    static Color ledstmp[LEDS];
+    static Color ledstmp[MAXLEDS];
 
     void animStart();
     
@@ -55,7 +58,7 @@ private:
 
     Color sparkleColor = Color(0xFFFFFF);
 
-    static byte seq[LEDS];
+    static byte seq[MAXLEDS];
 
     //brigthness animation (BrA) current initial phase
     byte braPhase;

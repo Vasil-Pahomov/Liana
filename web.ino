@@ -5,18 +5,27 @@ static constexpr const char *redirectStr = "<script>window.location='/'</script>
 
 void webSetup() {
     webServer.onNotFound([&]() {
-        if (!webFileRead(webServer.uri())) {
-          webServer.sendHeader("Cache-Control", " max-age=172800");
-          webServer.send(302, "text/html", redirectStr);
-        }    
+      Serial.println("NF: " + webServer.uri());
+      if (!webFileRead(webServer.uri())) {
+        webServer.sendHeader("Cache-Control", " max-age=172800");
+        webServer.send(302, "text/html", redirectStr);
+      }    
   });
+
+  webServer.on("/setup", HTTP_POST, webOnSetup);
 
   webServer.begin();
 }
 
 String indexKeyProcessor(String& key)
 {
-  return "Key '" + key + "' not found";
+  if (webServer.hasArg(key)) {
+    return webServer.arg(key);
+  }
+  if (currentConfig.configJsonDoc.containsKey(key)) {
+    return currentConfig.configJsonDoc[key];
+  }
+  return " ";
 }
 
 //Base code from https://github.com/r-downing/SPIFFSReadServer/blob/master/SPIFFSReadServer.h
@@ -38,7 +47,6 @@ bool webFileRead(String path) {
   else if (path.endsWith(".json")) contentType = "application/json";
   else contentType = "text/plain";
 
-  Serial.println("File: " +path+", ct:" + contentType);
   //split filepath and extension
   String prefix = path, ext = "";
   int lastPeriod = path.lastIndexOf('.');
@@ -69,11 +77,10 @@ bool webFileRead(String path) {
       //server sends file
       if (useTemplate)
       {
-        Serial.println("template");
+        currentConfig.configLoad();
         templateProcessor.processAndSend(path, (GetKeyValueCallback)indexKeyProcessor);
       } else {
         File file = SPIFFS.open(path, "r");
-        Serial.println("file");
         webServer.streamFile(file, contentType);
         file.close();
       }
@@ -82,3 +89,14 @@ bool webFileRead(String path) {
   } //if SPIFFS.exists
   return false;
 } 
+
+void webOnSetup() {
+  if (!webServer.hasArg("leds")) {
+    Serial.println("No leds arg");
+  }
+  Serial.println("Setup save leds="+webServer.arg("leds"));
+  currentConfig.leds = webServer.arg("leds").toInt();
+  currentConfig.configSave();
+  webServer.sendHeader("Cache-Control", " max-age=172800");
+  webServer.send(302, "text/html", "<script>window.location='/?msg=Please%20restart%20board%20for%20settings%20to%20take%20effect'</script>Not found. <a href='/'>Home</a>");
+}

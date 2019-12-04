@@ -1,7 +1,7 @@
 # ESP8266/WS2812 Light Animation
 ## How to start
 1. Connect your ESP, LED strip and power source as shown below (Wiring)
-1. Upload binary files: [program file](https://github.com/Vasil-Pahomov/Liana/raw/master/bin/Liana.ino.bin) at 0x000000, and [SPIFFS file](https://github.com/Vasil-Pahomov/Liana/raw/master/bin/Liana.spiffs.bin) at 0x100000. You should adjust settings for your board, particuarly COM port number, flash size, and SPI mode. I used official Flash download tools (can be found [here](https://www.espressif.com/en/support/download/other-tools)), and my working settings for NodeMCU board looked like this:
+1. Upload binary files: [program file](https://github.com/Vasil-Pahomov/Liana/raw/master/bin/Liana.ino.nodemcu.bin) at 0x000000, and [SPIFFS file](https://github.com/Vasil-Pahomov/Liana/raw/master/bin/Liana.spiffs.bin) at 0x100000. You should adjust settings for your board, particuarly COM port number, flash size, and SPI mode. I used official Flash download tools (can be found [here](https://www.espressif.com/en/support/download/other-tools)), and my working settings for NodeMCU board looked like this:
 
 ![Flash download tools settings](https://raw.githubusercontent.com/Vasil-Pahomov/Liana/master/pics/Download_tool_settings.png)
 
@@ -16,18 +16,21 @@
 
 	[WebSockets library by Markus Sattler](https://github.com/Links2004/arduinoWebSockets)
 
-	[SPIFFSReadServer by Ryan Downing](https://github.com/r-downing/SPIFFSReadServer)
-
 	[PerfWiFiManager by Ryan Downing](https://github.com/r-downing/PersWiFiManager)
+
+	[ArduinoJson](https://arduinojson.org/)
+
+	[EspHtmlTemplateProcessor](https://github.com/plapointe6/EspHtmlTemplateProcessor)
+
 1. Clone the repository (or download and unpack ZIP)
 1. Upload data files to SPIFFS with [the plugin](https://github.com/esp8266/arduino-esp8266fs-plugin)
-1. Set number of LEDs in your strip in the LEDS define at the beginning of anim.h
 1. Compile and run the sketch
 
 ## Wiring
 ![Wiring diagram](https://raw.githubusercontent.com/Vasil-Pahomov/Liana/master/pics/Diagram.png)
 
-Here example of NodeMCU is shown, but you can use any ESP8266 board. You power the board, power the WS2812 chain, and connect GPIO2 output of ESP to the data input of the firsh WS2812 in chain, that's all.
+Here example of NodeMCU is shown, but you can use any ESP8266 board. But note you may have to recompile the code! 
+You power the board, power the WS2812 chain, and connect GPIO2 output of ESP to the data input of the firsh WS2812 in chain, that's all.
 Be sure you use appropriate power source; most of ESP8266 board have voltage stabilizer but "raw" ESP8266 require 3.3V while WS2812 strips require 5V or 12V. You can use different power sources for ESP and the strip, you connect grounds then. Also, be sure that there's enough power for your LEDs and ESP; too weak power source can cause unintended side effects like random rebooting, wrong coloring etc.
 
 ## Controlling the unit

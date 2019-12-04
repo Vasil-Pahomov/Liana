@@ -3,9 +3,11 @@
 #include "palette.h"
 #include "anim.h"
 #include "brightness.h"
+#include "config.h"
 
-NeoPixelBus<NeoGrbFeature, NeoEsp8266Uart1800KbpsMethod> strip(LEDS, 2);//note that pin number is ignored for this method
+NeoPixelBus<NeoGrbFeature, NeoEsp8266Uart1800KbpsMethod>* strip;
 
+extern LianaConfig currentConfig;
 Anim::Anim() 
 {
     nextms = millis();
@@ -41,25 +43,25 @@ void Anim::run()
     Color * leds_prev = (leds == leds1) ? leds2 : leds1;
     
     if (transc > 0) {
-        for(int i=0; i<LEDS; i++) {
+        for(int i=0; i<ledsNum; i++) {
             //transition is in progress
             Color c = leds[i].interpolate(leds_prev[i], transc);
             byte r = (int)pgm_read_byte_near(BRI + c.r) * BRIGHTNESS / 256;
             byte g = (int)pgm_read_byte_near(BRI + c.g) * BRIGHTNESS / 256;
             byte b = (int)pgm_read_byte_near(BRI + c.b) * BRIGHTNESS / 256;
-            strip.SetPixelColor(i, RgbColor(r, g, b));
+            strip->SetPixelColor(i, RgbColor(r, g, b));
         }
     } else {
-        for(int i=0; i<LEDS; i++) {
+        for(int i=0; i<ledsNum; i++) {
             //regular operation
             byte r = (int)pgm_read_byte_near(BRI + leds[i].r) * BRIGHTNESS / 256;
             byte g = (int)pgm_read_byte_near(BRI + leds[i].g) * BRIGHTNESS / 256;
             byte b = (int)pgm_read_byte_near(BRI + leds[i].b) * BRIGHTNESS / 256;
-            strip.SetPixelColor(i, RgbColor(r, g, b));
+            strip->SetPixelColor(i, RgbColor(r, g, b));
         }
     }
   
-    strip.Show();
+    strip->Show();
 }
 
 void Anim::setUp()
@@ -83,7 +85,11 @@ void Anim::setUp()
 void Anim::doSetUp()
 {
   if (!initialized) {
-    strip.Begin();
+    currentConfig.configLoad();
+    ledsNum = currentConfig.leds;
+    strip = new NeoPixelBus<NeoGrbFeature, NeoEsp8266Uart1800KbpsMethod>(ledsNum, 2);
+    
+    strip->Begin();
     initialized = true;
   }
   if (!setUpOnPalChange) {
@@ -159,7 +165,7 @@ byte rngb() {
 }
 
 
-Color Anim::leds1[LEDS];
-Color Anim::leds2[LEDS];
-Color Anim::ledstmp[LEDS];
-byte Anim::seq[LEDS];
+Color Anim::leds1[MAXLEDS];
+Color Anim::leds2[MAXLEDS];
+Color Anim::ledstmp[MAXLEDS];
+byte Anim::seq[MAXLEDS];

@@ -38,9 +38,8 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
 void wsPoint(uint8_t num, uint8_t * payload, size_t length) {
   if (animInd == 100) {            
     uint32_t data = (uint32_t) strtol((const char *) &payload[2], NULL, 16);
-    int spotPos = (data & 0xFF)*LEDS >> 8;
     byte spotColor = (data >> 8) & 0xFF;
-    anim.setMagicParams(num, spotPos, spotColor, payload[1] == 'B');
+    anim.setMagicParams(num, data & 0xFF, spotColor, payload[1] == 'B');
   }      
 }
 

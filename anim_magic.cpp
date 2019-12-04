@@ -4,7 +4,6 @@
 #include "palette.h"
 
 #define BOOM_PHASES 10//number of phases in "boom" effect
-#define BOOM_WIDTH LEDS/BOOM_PHASES //width (in leds) of boom line
 #define MAX_SPOTS 5 //maximum number of spots to track
 
 typedef struct AMD {
@@ -17,9 +16,12 @@ typedef struct AMD {
 
 AMD amdata[MAX_SPOTS];
 
+int boomWidth;
+
 void Anim::animMagic_SetUp() {
+  boomWidth = ledsNum/BOOM_PHASES;
   for (int i=0;i<MAX_SPOTS;i++) {
-    amdata[i].lb = amdata[i].prevlb = LEDS;
+    amdata[i].lb = amdata[i].prevlb = ledsNum;
     amdata[i].ub = amdata[i].prevub = 0;
   }
 }
@@ -57,7 +59,7 @@ Color animMagic_getColor(byte spotCol)
 
 void Anim::animMagic_Run() {
 
-  for (int i=0;i<LEDS;i++) {
+  for (int i=0;i<ledsNum;i++) {
     leds[i].fade(5);
   }
 
@@ -66,14 +68,14 @@ void Anim::animMagic_Run() {
     Color col = animMagic_getColor(amdata[i].color);
 
     if (amdata[i].boomPhase > 0) {
-      int boomdisp = (BOOM_PHASES - amdata[i].boomPhase)*BOOM_WIDTH;
-      for (int j=0;j<BOOM_WIDTH;j++) {
+      int boomdisp = (BOOM_PHASES - amdata[i].boomPhase)*boomWidth;
+      for (int j=0;j<boomWidth;j++) {
         int upos = amdata[i].boomPos + boomdisp + j;
         int dpos = amdata[i].boomPos - boomdisp - j;
-        if (upos >=0 && upos < LEDS) {
+        if (upos >=0 && upos < ledsNum) {
           leds[upos] = col;
         }
-        if (dpos >=0 && dpos < LEDS) {
+        if (dpos >=0 && dpos < ledsNum) {
           leds[dpos] = col;
         }
       }
@@ -98,7 +100,7 @@ void Anim::animMagic_Run() {
 
     amdata[i].prevlb = amdata[i].lb;
     amdata[i].prevub = amdata[i].ub;
-    amdata[i].lb = LEDS;
+    amdata[i].lb = ledsNum;
     amdata[i].ub = 0;
 
   }
@@ -106,8 +108,10 @@ void Anim::animMagic_Run() {
 }
 
 
-void Anim::setMagicParams(byte ind, byte spotPos, byte spotCol, boolean isBoom) 
+void Anim::setMagicParams(byte ind, byte spotPosRel, byte spotCol, boolean isBoom) 
 {
+  int spotPos = spotPosRel*ledsNum >> 8;
+
   if (runImpl == &Anim::animMagic_Run) {
     if (amdata[ind].ub < spotPos) amdata[ind].ub = spotPos;
     if (amdata[ind].lb > spotPos) amdata[ind].lb = spotPos;

@@ -1,7 +1,3 @@
-
-#include "palette.h"
-#include "anim.h"
-
 #include <WebSocketsServer.h>
 #include <ESP8266WiFi.h>
 #include <ESP8266WiFiMulti.h>
@@ -14,12 +10,11 @@
 #include <PersWiFiManager.h>
 #include <EspHtmlTemplateProcessor.h>
 #include <FileReader.h>
+#include <ArduinoJson.h>
 
-
-
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//!! Be sure to set up your WiFi network name and password in the wifi.ino file !!
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#include "palette.h"
+#include "anim.h"
+#include "config.h"
 
 #define ANIMS 7 //number of animations (not including start one) to cycle randomly
 #define PALS 8 //number of palettes
@@ -31,6 +26,7 @@ Palette * pals[PALS] = {&PalRgb, &PalRainbow, &PalRainbowStripe, &PalParty, &Pal
 
 Anim anim = Anim();
 
+LianaConfig currentConfig;
 
 unsigned long ms = 10000;//startup animation duration, 10000 for "release" AnimStart
 
@@ -77,7 +73,7 @@ void loop() {
   
   if (millis() > ms && animInd != 255) {// animind == 255 is for turned off strip - it never ends automatically
     ms = millis() + INTERVAL; 
-    switch ( (animInd < 0) ? 0 : random(1)) {
+    switch ( (animInd <= 0) ? 0 : random(2)) {
       case 0: 
       {
         Serial.print(F("anim->"));

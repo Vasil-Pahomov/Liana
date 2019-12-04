@@ -12,7 +12,7 @@ void Anim::animPixieDust_SetUp() {
     if (inc > 0) {
         phase = -DUST_LENGTH/2;
     } else {
-        phase = LEDS + DUST_LENGTH/2;
+        phase = ledsNum + DUST_LENGTH/2;
     }
     glowSetUp();
 }
@@ -20,24 +20,24 @@ void Anim::animPixieDust_SetUp() {
 void Anim::animPixieDust_Run() {
 
     if (inc > 0) {
-        for (int i=0;i<LEDS;i++) {
+        for (int i=0;i<ledsNum;i++) {
             leds[i] = (i > phase) ? prevColor : curColor;
             glowForEachLed(i);
         }
         phase++;
-        if (phase >= 4*LEDS) {
+        if (phase >= 4*ledsNum) {
             phase = -DUST_LENGTH/2;
             prevColor = curColor;
             curColor = palette->getPalColor((float)rngb()/256);     
         }
     } else {
-        for (int i=0;i<LEDS;i++) {
+        for (int i=0;i<ledsNum;i++) {
             leds[i] = (i < phase) ? prevColor : curColor;
             glowForEachLed(i);
         }
         phase--;
-        if (phase <= -3*LEDS) {
-            phase = LEDS + DUST_LENGTH/2;
+        if (phase <= -3*ledsNum) {
+            phase = ledsNum + DUST_LENGTH/2;
             prevColor = curColor;
             while (prevColor.isCloseTo(curColor)) { 
               curColor = palette->getPalColor((float)rngb()/256);     
@@ -47,7 +47,7 @@ void Anim::animPixieDust_Run() {
     glowRun();
     
     for (int k = phase-DUST_LENGTH/2; k < (phase + DUST_LENGTH/2); k++ ) {
-        if (k >= 0 && k < LEDS) {
+        if (k >= 0 && k < ledsNum) {
             int mix = abs(k-phase) * 255 / DUST_LENGTH + random(-100, 100);
             if (mix < 0) { 
                 mix = 0;

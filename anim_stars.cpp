@@ -11,11 +11,11 @@ void Anim::animStars_SetUp() {
     inc = random (2, 5);
 
     //reset all phases
-    memset(seq, 255, LEDS); 
+    memset(seq, 255, ledsNum); 
 }
 
 void Anim::animStars_Run() {   
-    for (byte i=0;i<LEDS;i++) {
+    for (byte i=0;i<ledsNum;i++) {
         byte phi = seq[i];
         if (phi < 254) {
             Color col = ledstmp[i];
@@ -33,7 +33,7 @@ void Anim::animStars_Run() {
     }
 
     if (random(inc) == 0) {
-        byte pos = random(LEDS);
+        byte pos = random(ledsNum);
         if (seq[pos] > 250) {
             seq[pos] = 0;
             ledstmp[pos] = palette->getPalColor((float)rngb()/256);
