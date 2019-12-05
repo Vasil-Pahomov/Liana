@@ -27,6 +27,10 @@ void wifiSetUp()
 
   //in non-blocking mode, program will continue past this point without waiting
   persWM.begin();
+
+  if (!MDNS.begin(MDNS_NAME)) {
+    Serial.println("Error starting MDNS");
+  }
   
   wsSetup();
   otaSetup();
