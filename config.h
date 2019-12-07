@@ -6,10 +6,13 @@
 #include <ArduinoJson.h>
 
 class LianaConfig {
+  private:
+    void printConfig();
   public:
-    LianaConfig() : configJsonDoc(1024) {}
+    LianaConfig() : configJsonDoc(1024),leds(10), brightness(255) {}
        
     int leds;
+    int brightness; // brightness adjustment, up to 256
   
     DynamicJsonDocument configJsonDoc;
   
