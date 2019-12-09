@@ -41,7 +41,7 @@ void Anim::run()
     //changes from 1 to 0 during transition, so we interpolate from current color to previous
     float transc = (float)((long)transms - (long)millis()) / TRANSITION_MS;
     Color * leds_prev = (leds == leds1) ? leds2 : leds1;
-    
+    int BRIGHTNESS = currentConfig.brightness;
     if (transc > 0) {
         for(int i=0; i<ledsNum; i++) {
             //transition is in progress

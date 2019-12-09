@@ -1,4 +1,5 @@
-
+#ifndef BRIGHTNESS_H
+#define BRIGHTNESS_H
 const byte PROGMEM BRI[] = {
     0,
     0,
@@ -257,3 +258,5 @@ const byte PROGMEM BRI[] = {
     251,
     255    
 };
+
+#endif
