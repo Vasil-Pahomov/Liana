@@ -2,6 +2,12 @@
 
 #include "config.h"
 
+void LianaConfig::printConfig(){
+  Serial.println("Current config");
+  Serial.printf("leds: %d\n", leds);
+  Serial.printf("brightness: %d\n", brightness);
+}
+
 void LianaConfig::configLoad() {
   File file = SPIFFS.open(CONFIG_FILE_NAME, "r");
   if (deserializeJson(configJsonDoc, file)) {
@@ -9,6 +15,13 @@ void LianaConfig::configLoad() {
   }
   file.close();
   leds = configJsonDoc["leds"];
+  brightness = configJsonDoc["brightness"];
+  if (leds > 1024) { leds = 1024; } 
+  else if (leds <= 0){ leds = 1; }
+  
+  if (brightness > 255) { brightness = 255; }
+  else if (brightness < 0) { brightness = 0; }
+  printConfig();
 }
 
 void LianaConfig::configSave() {
@@ -23,6 +36,8 @@ void LianaConfig::configSave() {
   }
 
   configJsonDoc["leds"] = leds;
+  configJsonDoc["brightness"] = brightness;
+
 
   if (serializeJson(configJsonDoc, file) == 0) {
     Serial.println(F("Failed to write to file"));
