@@ -107,5 +107,5 @@ void webOnSetup() {
   currentConfig.brightness = brightness;
   currentConfig.configSave();
   webServer.sendHeader("Cache-Control", " max-age=172800");
-  webServer.send(302, "text/html", "<script>window.location='/?msg=Please%20restart%20board%20for%20settings%20to%20take%20effect'</script>Not found. <a href='/'>Home</a>");
+  webServer.send(302, "text/html", "<script>window.location='/?restartmsg=block'</script>Not found. <a href='/'>Home</a>");
 }

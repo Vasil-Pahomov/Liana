@@ -16,9 +16,6 @@ function suspend()
 {
 	if (wsconn.readyState == wsconn.OPEN) {
 		wsconn.send('I');
-		console.log('Info request sent');
-	} else {
-		console.log('Wrong state while sending info request: ' + wsconn.readyState);
 	}
 	window.setTimeout(suspend, 5000);
 }
@@ -27,7 +24,6 @@ function onAPChange() {
 	let anim = Number(document.querySelector('input[name="a"]:checked').value);
 	let pal = Number(document.querySelector('input[name="p"]:checked').value);
 	let data = (anim << 8) + pal;
-	console.log("a: " + anim + ", p: " + pal + ", data:" + data.toString(16));
 	wsconn.send('S' + data.toString(16));
 	if (anim == 100) {
 		window.addEventListener("deviceorientation", handleOrientation, true);
@@ -69,12 +65,11 @@ function handleMotion(e) {
 function sendBoom() {
 	let pos = bAng + (gAng << 8);
 	wsconn.send('PB' + pos.toString(16));
-	console.log('Boom!');
 }
 
 function connectws() {
 	wsconn = new WebSocket(ESP_WS, ['arduino'])
-	document.getElementById('dscon').innerText = 'Connecting...';
+	document.getElementById('dscon').innerText = 'Соединение...';
 	wsconn.onopen = function () {
 		suspend();
 		document.getElementById('dscon').style.display = 'none';
@@ -84,21 +79,18 @@ function connectws() {
 		console.log('WS error' + error);
 	};
 	wsconn.onmessage = function (e) {
-		console.log('Server: ', e.data);
 		if (e.data.charAt(0) == 'I') {
 			let ai = parseInt(e.data.substring(1,3), 16);
 			let pi = parseInt(e.data.substring(4,6), 16);
 			document.getElementById('onBox').checked = (ai != 255);
-			console.log("a=" + ai + ",p=" + pi);
-				if (ai != 255) { document.getElementById('a' + ai).checked = true; }
-				document.getElementById('p' + pi).checked = true;
+			if (ai != 255) { document.getElementById('a' + ai).checked = true; }
+			document.getElementById('p' + pi).checked = true;
 		}
 	};
 	wsconn.onclose = function () {
-		console.log('onclose');
 		document.getElementById('dscon').style.display = '';
 		document.getElementById('allc').style.display = 'none';
-		document.getElementById('dscon').innerText = 'No connection, retrying...';
+		document.getElementById('dscon').innerText = 'Нет соединения, повтор...';
 		window.setTimeout(connectws, 1000);
 	};
 }
@@ -114,21 +106,21 @@ function start() {
 
 </head>
 <body>
-	<div id="dscon">Connecting...</div>
-	<div style="color:red;">{{msg}}</div>
+	<div id="dscon">Соединение...</div>
+	<div style="color:red;display:none;display:{{restartmsg}}">Выключите и включите модуль для применения настроек</div>
 	<div id="allc" style="display:none;">
-		<label><input type="checkbox" id="onBox" onchange="onOnBoxChange()"/>Turn on</label>
+		<label><input type="checkbox" id="onBox" onchange="onOnBoxChange()"/>Включен</label>
 		<div id="mainControls">
 			<div class="col">
-				<input id="a0" type="radio" name="a" value="0" onclick="onAPChange()"/><label for="a0">Start</label>
-				<input id="a1" type="radio" name="a" value="1" onclick="onAPChange()"/><label for="a1">Run</label>
-				<input id="a2" type="radio" name="a" value="2" onclick="onAPChange()"/><label for="a2">Pixie dust</label>
-				<input id="a3" type="radio" name="a" value="3" onclick="onAPChange()"/><label for="a3">Sparks</label>
-				<input id="a4" type="radio" name="a" value="4" onclick="onAPChange()"/><label for="a4">Random cycle</label>
-				<input id="a5" type="radio" name="a" value="5" onclick="onAPChange()"/><label for="a5">Stars</label>
-				<input id="a6" type="radio" name="a" value="6" onclick="onAPChange()"/><label for="a6">Stripes</label>
-				<input id="a7" type="radio" name="a" value="7" onclick="onAPChange()"/><label for="a7">Fly</label>
-				<input id="a100" type="radio" name="a" value="100" onclick="onAPChange()"/><label for="a100">MAGIC</label>
+				<input id="a0" type="radio" name="a" value="0" onclick="onAPChange()"/><label for="a0">Начальная</label>
+				<input id="a1" type="radio" name="a" value="1" onclick="onAPChange()"/><label for="a1">Бег</label>
+				<input id="a2" type="radio" name="a" value="2" onclick="onAPChange()"/><label for="a2">Пыльца</label>
+				<input id="a3" type="radio" name="a" value="3" onclick="onAPChange()"/><label for="a3">Вспышки</label>
+				<input id="a4" type="radio" name="a" value="4" onclick="onAPChange()"/><label for="a4">Мерцание</label>
+				<input id="a5" type="radio" name="a" value="5" onclick="onAPChange()"/><label for="a5">Звёзды</label>
+				<input id="a6" type="radio" name="a" value="6" onclick="onAPChange()"/><label for="a6">Полосы</label>
+				<input id="a7" type="radio" name="a" value="7" onclick="onAPChange()"/><label for="a7">Полёт</label>
+				<input id="a100" type="radio" name="a" value="100" onclick="onAPChange()"/><label for="a100">МАГИЯ</label>
 			</div>
 			<div class="col">
 				<input id="p0" type="radio" name="p" value="0" onclick="onAPChange()"/><label for="p0">
@@ -158,7 +150,7 @@ function start() {
 			</div>
 		</div>
 	</div>
-	<a href="setup.htm">LEDs settings</a> |
-	<a href="wifi.htm">WiFi settings</a>
+	<a href="setup.htm">Настройки ленты</a> |
+	<a href="wifi.htm">Настройки WiFi</a>
 </body>
 </html>
