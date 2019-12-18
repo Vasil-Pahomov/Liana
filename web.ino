@@ -94,17 +94,13 @@ bool webFileRead(String path) {
 } 
 
 void webOnSetup() {
-  if (!webServer.hasArg("leds")) {
-    Serial.println("No 'leds' arg");
-  }
-  if (!webServer.hasArg("brightness")) {
-    Serial.println("No 'brightness' arg");
-  }
   int leds = webServer.arg("leds").toInt();
   int brightness = webServer.arg("brightness").toInt();
-  Serial.printf("Setup save leds=%d , brightness=%d", leds, brightness);
+  int neofeature = webServer.arg("neofeature").toInt();
+  Serial.printf("Setup save leds=%d , brightness=%d, neofeature=%d\n", leds, brightness, neofeature);
   currentConfig.leds = leds;
   currentConfig.brightness = brightness;
+  currentConfig.neofeature = neofeature;
   currentConfig.configSave();
   webServer.sendHeader("Cache-Control", " max-age=172800");
   webServer.send(302, "text/html", "<script>window.location='/?restartmsg=block'</script>Not found. <a href='/'>Home</a>");

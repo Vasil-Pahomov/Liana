@@ -1,4 +1,5 @@
 {
 	"leds":"100",
-	"brightness": "100"
+	"brightness": "100",
+	"neofeature": "0"
 }

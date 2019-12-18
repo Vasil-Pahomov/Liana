@@ -13,6 +13,7 @@ class LianaConfig {
        
     int leds;
     int brightness; // brightness adjustment, up to 256
+    int neofeature; //NeoXXXFeature index
   
     DynamicJsonDocument configJsonDoc;
   

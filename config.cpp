@@ -6,6 +6,7 @@ void LianaConfig::printConfig(){
   Serial.println("Current config");
   Serial.printf("leds: %d\n", leds);
   Serial.printf("brightness: %d\n", brightness);
+  Serial.printf("feature: %d\n", neofeature);
 }
 
 void LianaConfig::configLoad() {
@@ -16,11 +17,10 @@ void LianaConfig::configLoad() {
   file.close();
   leds = configJsonDoc["leds"];
   brightness = configJsonDoc["brightness"];
-  if (leds > 1024) { leds = 1024; } 
-  else if (leds <= 0){ leds = 1; }
-  
-  if (brightness > 255) { brightness = 255; }
-  else if (brightness < 0) { brightness = 0; }
+  neofeature = configJsonDoc["neofeature"];
+  if (leds > 1024 || leds <= 0) { leds = 100; } 
+  if (brightness > 255 || brightness < 0) { brightness = 100; }
+  if (neofeature > 255 || neofeature < 0) { neofeature = 0; }
   printConfig();
 }
 
@@ -37,7 +37,7 @@ void LianaConfig::configSave() {
 
   configJsonDoc["leds"] = leds;
   configJsonDoc["brightness"] = brightness;
-
+  configJsonDoc["neofeature"] = neofeature;
 
   if (serializeJson(configJsonDoc, file) == 0) {
     Serial.println(F("Failed to write to file"));
