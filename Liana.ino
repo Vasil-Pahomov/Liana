@@ -47,7 +47,23 @@ void setup() {
   anim.doSetUp();
 
 
+  if (SPIFFS.begin()) {
+    Serial.println("SPIFFS started");
+  } else {
+    Serial.println("SPIFFS FAILED");
+  }
+
+  File file = SPIFFS.open("/index.htm", "r");
+  if (!file) {
+    Serial.println("/index.htm not found");
+  } else {
+    Serial.printf("/index.htm size: %d\n", file.size());
+  }
+  file.close();
+
   Serial.println("Setup done");
+
+  
 }
 
 

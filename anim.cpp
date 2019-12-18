@@ -4,8 +4,9 @@
 #include "anim.h"
 #include "brightness.h"
 #include "config.h"
+#include "NeoPixelWrapper.cpp"
 
-NeoPixelBus<NeoGrbFeature, NeoEsp8266Uart1800KbpsMethod>* strip;
+NeoPixelWrapper * strip;
 
 extern LianaConfig currentConfig;
 Anim::Anim() 
@@ -86,10 +87,10 @@ void Anim::doSetUp()
 {
   if (!initialized) {
     currentConfig.configLoad();
-    ledsNum = currentConfig.leds;
-    strip = new NeoPixelBus<NeoGrbFeature, NeoEsp8266Uart1800KbpsMethod>(ledsNum, 2);
+    strip = new NeoPixelWrapper();
     
-    strip->Begin();
+    ledsNum = currentConfig.leds;
+    strip->Begin(currentConfig.neofeature, ledsNum, 2);
     initialized = true;
   }
   if (!setUpOnPalChange) {
