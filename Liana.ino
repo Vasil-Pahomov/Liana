@@ -16,7 +16,7 @@
 #include "anim.h"
 #include "config.h"
 
-#define ANIMS 7 //number of animations (not including start one) to cycle randomly
+#define ANIMS 8 //number of animations (not including start one) to cycle randomly
 #define PALS 8 //number of palettes
 #define INTERVAL 30000 //change interval, msec
 
