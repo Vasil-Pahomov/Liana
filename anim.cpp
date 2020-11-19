@@ -8,7 +8,13 @@
 
 NeoPixelWrapper * strip;
 
-extern LianaConfig currentConfig;
+Anim anim = Anim();
+
+int paletteInd = 0;
+int animInd = 0;
+
+Palette * pals[PALS] = {&PalRgb, &PalRainbow, &PalRainbowStripe, &PalParty, &PalHeat, &PalFire, &PalIceBlue, &PalXMas};
+
 Anim::Anim() 
 {
     nextms = millis();
@@ -18,8 +24,8 @@ void Anim::setPeriod(byte period) {
     this->period = period;
 }
 
-void Anim::setPalette(Palette * pal) {
-    this->palette = pal;
+void Anim::setPalette(int palind) {
+    this->palette = pals[palind];
     if (setUpOnPalChange) {
         setUp();
     }
@@ -168,6 +174,15 @@ unsigned int rng() {
 
 byte rngb() {
     return (byte)rng();
+}
+
+//sets animation and palette to values specified in animInd and paletteInd, 
+//and notifies all WebSocket connections of the change
+void setAnimPal() {
+  anim.setAnim(animInd);
+  anim.setPeriod(random(20, 40));
+  anim.setPalette(paletteInd);
+  anim.doSetUp();
 }
 
 

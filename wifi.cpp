@@ -1,3 +1,10 @@
+#include <DNSServer.h>
+#include <PersWiFiManager.h>
+#include <ESP8266mDNS.h>
+
+#include "web.h"
+#include "websocket.h"
+
 #define WIFI_AP_SSID "Liana"
 #define WIFI_CONNECTION_TIMEOUT 10000  //Timeout (in milliseconds) of waiting for WiFi connection
 #define MDNS_NAME "liana"
@@ -33,7 +40,6 @@ void wifiSetUp()
   }
   
   wsSetup();
-  otaSetup();
 }
 
 void wifiLoop()
@@ -41,6 +47,5 @@ void wifiLoop()
   persWM.handleWiFi();
   webServer.handleClient();
   wsRun();
-  otaRun();
   dnsServer.processNextRequest();
 }

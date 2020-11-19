@@ -2,6 +2,8 @@
 
 #include "config.h"
 
+LianaConfig currentConfig;
+
 void LianaConfig::printConfig(){
   Serial.println("Current config");
   Serial.printf("leds: %d\n", leds);

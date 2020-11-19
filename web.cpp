@@ -1,21 +1,12 @@
+#include <ESP8266WebServer.h>
+#include <EspHtmlTemplateProcessor.h>
+#include "config.h"
+
+
 ESP8266WebServer webServer(80);
 EspHtmlTemplateProcessor templateProcessor(&webServer);
 
 static constexpr const char *redirectStr = "<script>window.location='/'</script>Not found. <a href='/'>Home</a>";
-
-void webSetup() {
-    webServer.onNotFound([&]() {
-      Serial.println("NF: " + webServer.uri());
-      if (!webFileRead(webServer.uri())) {
-        webServer.sendHeader("Cache-Control", " max-age=172800");
-        webServer.send(302, "text/html", redirectStr);
-      }    
-  });
-
-  webServer.on("/setup", HTTP_POST, webOnSetup);
-
-  webServer.begin();
-}
 
 String indexKeyProcessor(String& key)
 {
@@ -104,4 +95,18 @@ void webOnSetup() {
   currentConfig.configSave();
   webServer.sendHeader("Cache-Control", " max-age=172800");
   webServer.send(302, "text/html", "<script>window.location='/?restartmsg=block'</script>Not found. <a href='/'>Home</a>");
+}
+
+void webSetup() {
+    webServer.onNotFound([&]() {
+      Serial.println("NF: " + webServer.uri());
+      if (!webFileRead(webServer.uri())) {
+        webServer.sendHeader("Cache-Control", " max-age=172800");
+        webServer.send(302, "text/html", redirectStr);
+      }    
+  });
+
+  webServer.on("/setup", HTTP_POST, webOnSetup);
+
+  webServer.begin();
 }

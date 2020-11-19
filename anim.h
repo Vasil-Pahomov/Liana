@@ -2,6 +2,10 @@
 #define anim_h
 #include "palette.h"
 
+#define ANIMS 8 //number of animations (not including start one) to cycle randomly
+#define PALS 8 //number of palettes
+#define INTERVAL 30000 //change interval, msec
+
 #define MAXLEDS 1024 // maximum number of LEDs in the strip TODO: switch to dynamic arrays to save RAM
 
 #define TRANSITION_MS 1000 // transition time between animations, ms
@@ -14,7 +18,8 @@
 //probability of spark when in idle plase
 #define SPARK_PROB 3
 
-
+extern int paletteInd;
+extern int animInd;
 
 class Anim {
     
@@ -122,15 +127,17 @@ public:
 
     Anim();
     void setPeriod(byte period);
-    void setPalette(Palette * pal);
+    void setPalette(int palind);
     void setAnim(byte animInd);
     void run();
     void doSetUp();
     void setMagicParams(byte ind, byte position, byte color, boolean isBoom);
-    
-    
 
 };
+
+extern Anim anim;
+
+void setAnimPal();
 
 unsigned int rng();
 

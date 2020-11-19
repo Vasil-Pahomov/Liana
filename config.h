@@ -8,6 +8,7 @@
 class LianaConfig {
   private:
     void printConfig();
+
   public:
     LianaConfig() : configJsonDoc(1024),leds(10), brightness(255) {}
        
@@ -21,4 +22,7 @@ class LianaConfig {
   
     void configSave();
 };
+
+extern LianaConfig currentConfig;
+
 #endif

@@ -1,0 +1,3 @@
+void wifiSetUp();
+
+void wifiLoop();
