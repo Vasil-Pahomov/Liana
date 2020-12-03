@@ -15,7 +15,16 @@ class LianaConfig {
     int leds;
     int brightness; // brightness adjustment, up to 256
     int neofeature; //NeoXXXFeature index
-  
+
+    //MQTT client settings
+    String mqttHost;
+    int mqttPort;
+    String mqttClientId;
+    String mqttLogin;
+    String mqttPass;
+    String mqttTopic;
+
+
     DynamicJsonDocument configJsonDoc;
   
     void configLoad();

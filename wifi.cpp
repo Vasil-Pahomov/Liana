@@ -11,6 +11,7 @@
 
 DNSServer dnsServer;
 PersWiFiManager persWM(webServer, dnsServer);
+bool _wifiConnected = false;
 
 void wifiSetUp()
 {
@@ -21,6 +22,7 @@ void wifiSetUp()
   persWM.onConnect([]() {
     Serial.print("Connected, local IP:");
     Serial.println(WiFi.localIP());
+    _wifiConnected = true;
   });
   persWM.onAp([](){
     Serial.println("AP MODE");
@@ -48,4 +50,9 @@ void wifiLoop()
   webServer.handleClient();
   wsRun();
   dnsServer.processNextRequest();
+}
+
+bool wifiIsConnected()
+{
+  return _wifiConnected;
 }

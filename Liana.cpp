@@ -17,6 +17,7 @@
 #include "web.h"
 #include "websocket.h"
 #include "wifi.h"
+#include "mqtt.h"
 
 //#define USE_START_ANIMATION //start animation is used in cycling as well as other animations
 
@@ -25,8 +26,15 @@ unsigned long ms = 10000;//startup animation duration, 10000 for "release" AnimS
 void setup() { 
   Serial.begin(115200);
   Serial.println("Entering setup");
-
+  if (SPIFFS.begin()) {
+    Serial.println("SPIFFS started");
+  } else {
+    Serial.println("SPIFFS FAILED");
+  }
+  currentConfig.configLoad();
+  
   wifiSetUp();
+  mqttSetup();
 
   randomSeed(analogRead(0)*analogRead(1));
   anim.setAnim(animInd);
@@ -34,24 +42,7 @@ void setup() {
   anim.setPalette(0);
   anim.doSetUp();
 
-
-  if (SPIFFS.begin()) {
-    Serial.println("SPIFFS started");
-  } else {
-    Serial.println("SPIFFS FAILED");
-  }
-
-  File file = SPIFFS.open("/index.htm", "r");
-  if (!file) {
-    Serial.println("/index.htm not found");
-  } else {
-    Serial.printf("/index.htm size: %d\n", file.size());
-  }
-  file.close();
-
   Serial.println("Setup done");
-
-  
 }
 
 
@@ -76,6 +67,8 @@ void loop() {
   anim.run();
   
   if (millis() > ms && animInd != 255) {// animind == 255 is for turned off strip - it never ends automatically
+    Serial.print("Local IP:");Serial.println(WiFi.localIP());
+
     ms = millis() + INTERVAL; 
     switch ( (animInd <= 0) ? 0 : random(2)) {
       case 0: 
@@ -107,6 +100,7 @@ void loop() {
   /**/
 
   wifiLoop();
+  mqttRun();
 
 }
 

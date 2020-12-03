@@ -170,7 +170,6 @@ void Anim::animPulse_Run() {
         if (seq[pos] == PULSE_LENGTH) {
             seq[pos] = 0;
             ledstmp[pos] = palette->getPalColor((float)rngb()/256);
-            Serial.printf("PS: %d\n",pos);
         }
     }
 }

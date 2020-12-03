@@ -1,5 +1,11 @@
 {
 	"leds":"100",
 	"brightness": "100",
-	"neofeature": "0"
+	"neofeature": "0",
+	"mqttHost": "localhost",
+	"mqttPort": "1883",
+	"mqttClientId": "Liana",
+	"mqttLogin": "login",
+	"mqttPass": "password",
+	"mqttTopic": "/Liana"
 }
