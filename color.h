@@ -63,6 +63,14 @@ struct Color
       if (b>=db) { b=b-db; } else { b=0; }
     }  
 
+    //adds another color up to saturation
+    void addSaturate(Color color) 
+    {
+      r = ( (r + color.r) <= 255) ? (r + color.r) : 255;
+      g = ( (g + color.g) <= 255) ? (g + color.g) : 255;
+      b = ( (b + color.b) <= 255) ? (b + color.b) : 255;
+    }
+
     //checks whether this color is visually close to given one
     byte isCloseTo(Color c) {
       int diff = abs(r-c.r) + abs(g-c.g) + abs(b-c.b);

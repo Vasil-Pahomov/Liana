@@ -3,26 +3,44 @@
 
 <head>
 	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-	<title>Liana Setup</title>
+	<meta charset="utf-8"/>
+	<title>Настройки гирлянды</title>
 	<link rel="stylesheet" type="text/css" href="s.css?v1">
+	<script>
+document.addEventListener("DOMContentLoaded", start);
+
+function start() {
+	document.getElementById('neofeature').value = '{{neofeature}}';
+}
+	</script>
 </head>
 
 <body>
 	<div style='text-align:left;display:inline-block;width:320px;padding:5px'>
 		<form method='post' action='/setup'>
-			<label>Number of LEDs
-				<input type='number' min='1' max='1024' id='leds' name='leds' placeholder='Number of LEDs' value='{{leds}}'>
+			<label>Яркость (1..255)
+				<input type='number' min='1' max='255' id='brigthness' name='brightness' placeholder='Яркость' value='{{brightness}}'>
 			</label>
-			<label>Brightness
-				<input type='number' min='1' max='255' id='leds' name='brightness' placeholder='Brightness' value='{{brightness}}'>
+			<br><hr>
+			<label>К-во светодиодов
+				<input type='number' min='1' max='1024' id='leds' name='leds' placeholder='К-во светодиодов' value='{{leds}}'>
+			</label>
+			<label>Конфигурация LED
+				<select id="neofeature" name="neofeature">
+					<option value="0">RGB</option>
+					<option value="1">GRB</option>
+					<option value="2">RBG</option>
+					<option value="2">RGBW</option>
+					<option value="2">GRBW</option>
+				</select>
 			</label>
 			<br><br>
 
-			<button type='submit'>Apply</button>
+			<button type='submit'>Применить</button>
 		</form>
 		<br>
-		<a href="javascript:history.back()">Back</a> | 
-		<a href="/">Home</a>
+		<a href="javascript:history.back()">Назад</a> | 
+		<a href="/">Домой</a>
 	</div>
 </body>
 

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="stylesheet" type="text/css" href="s.css?v1">
 <script>
-//const ESP_WS = "ws://192.168.4.1:81/"; 
+//const ESP_WS = "ws://192.168.0.19:81/"; 
 const ESP_WS = "ws://" + location.hostname + ":81/" 
 let suspendTimer;
 let bAng, gAng;
@@ -16,18 +16,14 @@ function suspend()
 {
 	if (wsconn.readyState == wsconn.OPEN) {
 		wsconn.send('I');
-		console.log('Info request sent');
-	} else {
-		console.log('Wrong state while sending info request: ' + wsconn.readyState);
 	}
 	window.setTimeout(suspend, 5000);
 }
 
-function onAnimPalChange() {
-	let anim = Number(document.getElementById('animSelect').value);
-	let pal = Number(document.getElementById('palSelect').value);
+function onAPChange() {
+	let anim = Number(document.querySelector('input[name="a"]:checked').value);
+	let pal = Number(document.querySelector('input[name="p"]:checked').value);
 	let data = (anim << 8) + pal;
-	console.log(data.toString(16));
 	wsconn.send('S' + data.toString(16));
 	if (anim == 100) {
 		window.addEventListener("deviceorientation", handleOrientation, true);
@@ -42,7 +38,7 @@ function onOnBoxChange() {
 	var mainControlsDiv = document.getElementById('mainControls'); 
 	if (document.getElementById('onBox').checked) {
 		mainControlsDiv.style.display = '';
-		document.getElementById('animSelect').value = 0;
+		document.getElementById('a0').checked = true;
 		onAnimPalChange();
 	} else {
 		mainControlsDiv.style.display = 'none';
@@ -69,12 +65,11 @@ function handleMotion(e) {
 function sendBoom() {
 	let pos = bAng + (gAng << 8);
 	wsconn.send('PB' + pos.toString(16));
-	console.log('Boom!');
 }
 
 function connectws() {
 	wsconn = new WebSocket(ESP_WS, ['arduino'])
-	document.getElementById('dscon').innerText = 'Connecting...';
+	document.getElementById('dscon').innerText = 'Соединение...';
 	wsconn.onopen = function () {
 		suspend();
 		document.getElementById('dscon').style.display = 'none';
@@ -84,21 +79,18 @@ function connectws() {
 		console.log('WS error' + error);
 	};
 	wsconn.onmessage = function (e) {
-		console.log('Server: ', e.data);
 		if (e.data.charAt(0) == 'I') {
 			let ai = parseInt(e.data.substring(1,3), 16);
 			let pi = parseInt(e.data.substring(4,6), 16);
 			document.getElementById('onBox').checked = (ai != 255);
-			document.getElementById('animSelect').value = ai;
-			document.getElementById('palSelect').value = pi;
-			console.log("a=" + ai + ",p=" + pi);
+			if (ai != 255) { document.getElementById('a' + ai).checked = true; }
+			document.getElementById('p' + pi).checked = true;
 		}
 	};
 	wsconn.onclose = function () {
-		console.log('onclose');
 		document.getElementById('dscon').style.display = '';
 		document.getElementById('allc').style.display = 'none';
-		document.getElementById('dscon').innerText = 'No connection, retrying...';
+		document.getElementById('dscon').innerText = 'Нет соединения, повтор...';
 		window.setTimeout(connectws, 1000);
 	};
 }
@@ -114,35 +106,53 @@ function start() {
 
 </head>
 <body>
-	<div id="dscon">Connecting...</div>
-	<div style="color:red;">{{msg}}</div>
+	<div id="dscon">Соединение...</div>
+	<div style="color:red;display:none;display:{{restartmsg}}">Выключите и включите модуль для применения настроек</div>
 	<div id="allc" style="display:none;">
-		<label><input type="checkbox" id="onBox" onchange="onOnBoxChange()"/>Turn on</label>
+		<label><input type="checkbox" id="onBox" onchange="onOnBoxChange()"/>Включен</label>
 		<div id="mainControls">
-			<select id="animSelect" onchange="onAnimPalChange()">
-				<option value="0">Start</option>
-				<option value="1">Run</option>
-				<option value="2">Pixie dust</option>
-				<option value="3">Sparks</option>
-				<option value="4">Random cycle</option>
-				<option value="5">Stars</option>
-				<option value="6">Stripes</option>
-				<option value="7">Fly</option>
-				<option value="100">Magic</option>
-			</select>
-			<select id="palSelect" onchange="onAnimPalChange()">
-				<option value="0">RGB</option>
-				<option value="1">Rainbow</option>
-				<option value="2">Striped rainbow</option>
-				<option value="3">Party</option>
-				<option value="4">Heat</option>
-				<option value="5">Fire</option>
-				<option value="6">Ice</option>
-				<option value="7">Christmas</option>
-			</select>
+			<div class="col">
+				<input id="a0" type="radio" name="a" value="0" onclick="onAPChange()"/><label for="a0">Начальная</label>
+				<input id="a1" type="radio" name="a" value="1" onclick="onAPChange()"/><label for="a1">Бег</label>
+				<input id="a2" type="radio" name="a" value="2" onclick="onAPChange()"/><label for="a2">Пыльца</label>
+				<input id="a3" type="radio" name="a" value="3" onclick="onAPChange()"/><label for="a3">Вспышки</label>
+				<input id="a4" type="radio" name="a" value="4" onclick="onAPChange()"/><label for="a4">Мерцание</label>
+				<input id="a5" type="radio" name="a" value="5" onclick="onAPChange()"/><label for="a5">Звёзды</label>
+				<input id="a6" type="radio" name="a" value="6" onclick="onAPChange()"/><label for="a6">Полосы</label>
+				<input id="a7" type="radio" name="a" value="7" onclick="onAPChange()"/><label for="a7">Полёт</label>
+				<input id="a8" type="radio" name="a" value="8" onclick="onAPChange()"/><label for="a8">Пульс</label>
+				<input id="a100" type="radio" name="a" value="100" onclick="onAPChange()"/><label for="a100">МАГИЯ</label>
+			</div>
+			<div class="col">
+				<input id="p0" type="radio" name="p" value="0" onclick="onAPChange()"/><label for="p0">
+					<span style="background: linear-gradient(90deg, #000 0%, #FF0000 25%, #00FF00 50%, #0000FF 75%, #000 100%);"></span>
+				</label>
+				<input id="p1" type="radio" name="p" value="1" onclick="onAPChange()"/><label for="p1">
+					<span style="background: linear-gradient(90deg, #000 0%, #FF0000 11%, #AB5500 22%, #ABAB00 33%, #00FF00 44%, #00AB55 55%, #0000FF 67%, #5500AB 78%, #AB0055 89%, #000 100%);"></span>
+				</label>
+				<input id="p2" type="radio" name="p" value="2" onclick="onAPChange()"/><label for="p2">
+					<span style="background: linear-gradient(90deg, #000 0%, #FF0000 6%, #000 13%, #AA5500 19%, #000 25%, #ABAB00 31%, #000 38%, #00FF00 44%, #000 50%, #00AB55 56%, #000 63%, #0000FF 69%, #000 75%, #5500AB 81%, #000 88%, #AB0055 94%, #000 100%);"></span>
+				</label>
+				<input id="p3" type="radio" name="p" value="3" onclick="onAPChange()"/><label for="p3">
+					<span style="background: linear-gradient(90deg, #000 0%, #5500AB 6%, #84007C 12%, #B5004B 18%, #E5001B 24%, #E81700 29%, #B84700 35%, #AB7700 41%, #ABAB00 47%, #AB5500 53%, #DD2200 59%, #F2000E 65%, #C2003E 71%, #8F0071 76%, #5F00A1 82%, #2F00D0 88%, #0007F9 94%, #000 100%);"></span>
+				</label>
+				<input id="p4" type="radio" name="p" value="4" onclick="onAPChange()"/><label for="p4">
+					<span style="background: linear-gradient(90deg, #000 0%, #700070 20%, #FF0000 40%, #FFFF00 60%, #FFFFCC 80%, #000 100%);"></span>
+				</label>
+				<input id="p5" type="radio" name="p" value="5" onclick="onAPChange()"/><label for="p5">
+					<span style="background: linear-gradient(90deg, #000 0%, #000 14%, #220000 29%, #880000 43%, #FF0000 57%, #FF6600 71%, #FFCC00 86%, #000 100%);"></span>
+				</label>
+				<input id="p6" type="radio" name="p" value="6" onclick="onAPChange()"/><label for="p6">
+					<span style="background: linear-gradient(90deg, #000 0%, #FFFFFF 25%, #0000FF 50%, #00FFFF 75%, #000 100%);"></span>
+				</label>
+				<input id="p7" type="radio" name="p" value="7" onclick="onAPChange()"/><label for="p7">
+					<span style="background: linear-gradient(90deg, #000 0%, #FF0000 33%, #00FF00 66%, #000 100%);"></span>
+				</label>
+			</div>
 		</div>
 	</div>
-	<a href="setup.htm">LEDs settings</a> |
-	<a href="wifi.htm">WiFi settings</a>
+	<a href="setup.htm">Лента</a> |
+	<a href="wifi.htm">WiFi</a> |
+	<a href="mqtt.htm">MQTT</a>
 </body>
 </html>

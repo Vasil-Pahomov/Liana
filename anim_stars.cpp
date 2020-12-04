@@ -15,7 +15,7 @@ void Anim::animStars_SetUp() {
 }
 
 void Anim::animStars_Run() {   
-    for (byte i=0;i<ledsNum;i++) {
+    for (int i=0;i<ledsNum;i++) {
         byte phi = seq[i];
         if (phi < 254) {
             Color col = ledstmp[i];

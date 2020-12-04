@@ -8,16 +8,30 @@
 class LianaConfig {
   private:
     void printConfig();
+
   public:
     LianaConfig() : configJsonDoc(1024),leds(10), brightness(255) {}
        
     int leds;
     int brightness; // brightness adjustment, up to 256
-  
+    int neofeature; //NeoXXXFeature index
+
+    //MQTT client settings
+    String mqttHost;
+    int mqttPort;
+    String mqttClientId;
+    String mqttLogin;
+    String mqttPass;
+    String mqttTopic;
+
+
     DynamicJsonDocument configJsonDoc;
   
     void configLoad();
   
     void configSave();
 };
+
+extern LianaConfig currentConfig;
+
 #endif

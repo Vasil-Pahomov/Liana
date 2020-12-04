@@ -1,21 +1,12 @@
+#include <ESP8266WebServer.h>
+#include <EspHtmlTemplateProcessor.h>
+#include "config.h"
+
+
 ESP8266WebServer webServer(80);
 EspHtmlTemplateProcessor templateProcessor(&webServer);
 
 static constexpr const char *redirectStr = "<script>window.location='/'</script>Not found. <a href='/'>Home</a>";
-
-void webSetup() {
-    webServer.onNotFound([&]() {
-      Serial.println("NF: " + webServer.uri());
-      if (!webFileRead(webServer.uri())) {
-        webServer.sendHeader("Cache-Control", " max-age=172800");
-        webServer.send(302, "text/html", redirectStr);
-      }    
-  });
-
-  webServer.on("/setup", HTTP_POST, webOnSetup);
-
-  webServer.begin();
-}
 
 String indexKeyProcessor(String& key)
 {
@@ -77,7 +68,6 @@ bool webFileRead(String path) {
       //server sends file
       if (useTemplate)
       {
-        currentConfig.configLoad();
         templateProcessor.processAndSend(path, (GetKeyValueCallback)indexKeyProcessor);
       } else {
         File file = SPIFFS.open(path, "r");
@@ -93,19 +83,48 @@ bool webFileRead(String path) {
   return false;
 } 
 
+void webRedirectHomeWithRestartMessage() {
+  webServer.sendHeader("Cache-Control", " max-age=172800");
+  webServer.send(302, "text/html", "<script>window.location='/?restartmsg=block'</script>Not found. <a href='/'>Home</a>");
+}
+
 void webOnSetup() {
-  if (!webServer.hasArg("leds")) {
-    Serial.println("No 'leds' arg");
-  }
-  if (!webServer.hasArg("brightness")) {
-    Serial.println("No 'brightness' arg");
-  }
   int leds = webServer.arg("leds").toInt();
   int brightness = webServer.arg("brightness").toInt();
-  Serial.printf("Setup save leds=%d , brightness=%d", leds, brightness);
+  int neofeature = webServer.arg("neofeature").toInt();
+  Serial.printf("Setup save leds=%d , brightness=%d, neofeature=%d\n", leds, brightness, neofeature);
   currentConfig.leds = leds;
   currentConfig.brightness = brightness;
+  currentConfig.neofeature = neofeature;
   currentConfig.configSave();
-  webServer.sendHeader("Cache-Control", " max-age=172800");
-  webServer.send(302, "text/html", "<script>window.location='/?msg=Please%20restart%20board%20for%20settings%20to%20take%20effect'</script>Not found. <a href='/'>Home</a>");
+  webRedirectHomeWithRestartMessage();
+}
+
+void webOnMqttSettings() {
+  currentConfig.mqttHost = webServer.arg("mqttHost");
+  currentConfig.mqttPort = webServer.arg("mqttPort").toInt();
+  currentConfig.mqttClientId = webServer.arg("mqttClientId");
+  currentConfig.mqttLogin = webServer.arg("mqttLogin");
+  currentConfig.mqttPass = webServer.arg("mqttPass");
+  currentConfig.mqttTopic = webServer.arg("mqttTopic");
+  Serial.printf("Setup save mqtt host=%s, port=%d\n", currentConfig.mqttHost.c_str(), currentConfig.mqttPort);
+  currentConfig.configSave();
+  webRedirectHomeWithRestartMessage();
+}
+
+
+void webSetup() {
+    webServer.onNotFound([&]() {
+      Serial.println("NF: " + webServer.uri());
+      if (!webFileRead(webServer.uri())) {
+        webServer.sendHeader("Cache-Control", " max-age=172800");
+        webServer.send(302, "text/html", redirectStr);
+      }    
+  });
+
+  //todo: it's not clear you should add the handler for each settings page here, think of it
+  webServer.on("/setup", HTTP_POST, webOnSetup);
+  webServer.on("/mqtt", HTTP_POST, webOnMqttSettings);
+
+  webServer.begin();
 }

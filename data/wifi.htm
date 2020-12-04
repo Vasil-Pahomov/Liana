@@ -3,8 +3,9 @@
 
 <head>
 	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+	<meta charset="utf-8"/>
 	<link rel="stylesheet" type="text/css" href="s.css?v1">
-	<title>ESP WiFi</title>
+	<title>Настройки WiFi</title>
 	<script>
 		function g(i){return document.getElementById(i);};
 		function p(t,l){if(confirm(t)) window.location=l;};
@@ -13,7 +14,7 @@
 		function scan(){
 			if(X) return;
 			X=new XMLHttpRequest(),wl=document.getElementById('wl');
-			wl[H]="Scanning...";
+			wl[H]="Сканирование...";
 			X.onreadystatechange=function(){
 				if (this.readyState==4&&this.status==200) {
 					X=0;
@@ -38,26 +39,26 @@
 
 <body>
 	<div style='text-align:left;display:inline-block;width:320px;padding:5px'>
-		<button onclick="scan()">&#x21bb; Scan</button>
+		<button onclick="scan()">&#x21bb; Сканировать</button>
 		<p id='wl'></p>
 		<form method='post' action='/wifi/connect'>
-			<input id='s' name='n' length=32 placeholder='SSID'>
+			<input id='s' name='n' length=32 placeholder='ID сети'>
 			<br>
-			<input id='p' name='p' length=64 type='password' placeholder='password'>
+			<input id='p' name='p' length=64 type='password' placeholder='пароль'>
 			<br>
 			<br>
-			<button type='submit'>Connect</button>
+			<button type='submit'>Подключить</button>
 		</form>
 		<br>
 		<br>
-		<button onclick="p('Start WPS?','/wifi/wps')">WPS Setup</button>
+		<button onclick="p('Запустить WPS?','/wifi/wps')">Настройка WPS</button>
 		<br>
-		<button onclick="p('Start AP mode?','/wifi/ap')">AP Mode</button>
+		<button onclick="p('Запустить точку доступа?','/wifi/ap')">Точка доступа</button>
 		<br>
-		<button onclick="p('Reboot device?','/wifi/rst')">Reboot</button>
+		<button onclick="p('Перезагрузить контроллер?','/wifi/rst')">Перезагрузка</button>
 		<br>
-		<a href="javascript:history.back()">Back</a> | 
-		<a href="/">Home</a>
+		<a href="javascript:history.back()">Назад</a> | 
+		<a href="/">Домой</a>
 	</div>
 </body>
 

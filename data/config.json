@@ -1,4 +1,11 @@
 {
 	"leds":"100",
-	"brightness": "100"
+	"brightness": "100",
+	"neofeature": "0",
+	"mqttHost": "broker.hivemq.com",
+	"mqttPort": "1883",
+	"mqttClientId": "Liana",
+	"mqttLogin": "login",
+	"mqttPass": "pass",
+	"mqttTopic": "Liana"
 }

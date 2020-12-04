@@ -1,9 +1,17 @@
+#include <DNSServer.h>
+#include <PersWiFiManager.h>
+#include <ESP8266mDNS.h>
+
+#include "web.h"
+#include "websocket.h"
+
 #define WIFI_AP_SSID "Liana"
 #define WIFI_CONNECTION_TIMEOUT 10000  //Timeout (in milliseconds) of waiting for WiFi connection
 #define MDNS_NAME "liana"
 
 DNSServer dnsServer;
 PersWiFiManager persWM(webServer, dnsServer);
+bool _wifiConnected = false;
 
 void wifiSetUp()
 {
@@ -14,6 +22,7 @@ void wifiSetUp()
   persWM.onConnect([]() {
     Serial.print("Connected, local IP:");
     Serial.println(WiFi.localIP());
+    _wifiConnected = true;
   });
   persWM.onAp([](){
     Serial.println("AP MODE");
@@ -33,7 +42,6 @@ void wifiSetUp()
   }
   
   wsSetup();
-  otaSetup();
 }
 
 void wifiLoop()
@@ -41,6 +49,10 @@ void wifiLoop()
   persWM.handleWiFi();
   webServer.handleClient();
   wsRun();
-  otaRun();
   dnsServer.processNextRequest();
+}
+
+bool wifiIsConnected()
+{
+  return _wifiConnected;
 }

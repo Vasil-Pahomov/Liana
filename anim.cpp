@@ -4,10 +4,20 @@
 #include "anim.h"
 #include "brightness.h"
 #include "config.h"
+#include "NeoPixelWrapper.cpp"
 
-NeoPixelBus<NeoGrbFeature, NeoEsp8266Uart1800KbpsMethod>* strip;
+NeoPixelWrapper * strip;
 
-extern LianaConfig currentConfig;
+Anim anim = Anim();
+
+int paletteInd = 0;
+int animInd = 0;
+
+//TODO: do something with this, it's bad thing to reference that var here
+extern unsigned long ms;
+
+Palette * pals[PALS] = {&PalRgb, &PalRainbow, &PalRainbowStripe, &PalParty, &PalHeat, &PalFire, &PalIceBlue, &PalXMas};
+
 Anim::Anim() 
 {
     nextms = millis();
@@ -17,8 +27,8 @@ void Anim::setPeriod(byte period) {
     this->period = period;
 }
 
-void Anim::setPalette(Palette * pal) {
-    this->palette = pal;
+void Anim::setPalette(int palind) {
+    this->palette = pals[palind];
     if (setUpOnPalChange) {
         setUp();
     }
@@ -86,10 +96,10 @@ void Anim::doSetUp()
 {
   if (!initialized) {
     currentConfig.configLoad();
-    ledsNum = currentConfig.leds;
-    strip = new NeoPixelBus<NeoGrbFeature, NeoEsp8266Uart1800KbpsMethod>(ledsNum, 2);
+    strip = new NeoPixelWrapper();
     
-    strip->Begin();
+    ledsNum = currentConfig.leds;
+    strip->Begin(currentConfig.neofeature, ledsNum, 2);
     initialized = true;
   }
   if (!setUpOnPalChange) {
@@ -140,6 +150,11 @@ void Anim::setAnim(byte animInd)
             runImpl = &Anim::animFly_Run;
             setUpOnPalChange = false;
         break;                                
+        case 8: 
+            setUpImpl = &Anim::animPulse_SetUp;
+            runImpl = &Anim::animPulse_Run;
+            setUpOnPalChange = false;
+        break;                                
         case 100://special "magic" animation
             setUpImpl = &Anim::animMagic_SetUp;
             runImpl = &Anim::animMagic_Run;
@@ -164,6 +179,39 @@ byte rngb() {
     return (byte)rng();
 }
 
+//sets animation and palette to values specified in animInd and paletteInd, 
+//and notifies all WebSocket connections of the change
+void setAnimPal() {
+  anim.setAnim(animInd);
+  anim.setPeriod(random(20, 40));
+  anim.setPalette(paletteInd);
+  anim.doSetUp();
+}
+
+//sets animation and resets "change" time
+void setAnimation(int animIndex)
+{
+    if ((animIndex < 0 || animIndex >= ANIMS) && (animIndex != 255) ) return; //TODO: get rid of magic number 255 ("OFF" animation)
+    animInd = animIndex;
+    setAnimPal();
+    if (animInd == 0) {
+        ms = millis() + 10000;  //startup animation requires less duration; TODO: generalize somehow these magic constants 10000 here and in main file
+    } else {
+        ms = millis() + INTERVAL;
+    }
+}
+
+void setPalette(int paletteIndex)
+{
+    if (paletteInd < 0 || paletteInd >= PALS) return;
+    paletteInd = paletteIndex;
+    setAnimPal();
+    ms = millis() + INTERVAL;
+}
+
+void setDuration(unsigned long durationMs) {
+    ms = millis() + durationMs;
+}
 
 Color Anim::leds1[MAXLEDS];
 Color Anim::leds2[MAXLEDS];

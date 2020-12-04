@@ -2,10 +2,13 @@
 
 #include "config.h"
 
+LianaConfig currentConfig;
+
 void LianaConfig::printConfig(){
   Serial.println("Current config");
   Serial.printf("leds: %d\n", leds);
   Serial.printf("brightness: %d\n", brightness);
+  Serial.printf("feature: %d\n", neofeature);
 }
 
 void LianaConfig::configLoad() {
@@ -16,11 +19,17 @@ void LianaConfig::configLoad() {
   file.close();
   leds = configJsonDoc["leds"];
   brightness = configJsonDoc["brightness"];
-  if (leds > 1024) { leds = 1024; } 
-  else if (leds <= 0){ leds = 1; }
-  
-  if (brightness > 255) { brightness = 255; }
-  else if (brightness < 0) { brightness = 0; }
+  neofeature = configJsonDoc["neofeature"];
+  mqttHost = configJsonDoc["mqttHost"].as<String>();
+  mqttPort = configJsonDoc["mqttPort"];
+  mqttClientId = configJsonDoc["mqttClientId"].as<String>();
+  mqttLogin = configJsonDoc["mqttLogin"].as<String>();
+  mqttPass = configJsonDoc["mqttPass"].as<String>();
+  mqttTopic = configJsonDoc["mqttTopic"].as<String>();
+
+  if (leds > 1024 || leds <= 0) { leds = 100; } 
+  if (brightness > 255 || brightness < 0) { brightness = 100; }
+  if (neofeature > 255 || neofeature < 0) { neofeature = 0; }
   printConfig();
 }
 
@@ -37,7 +46,14 @@ void LianaConfig::configSave() {
 
   configJsonDoc["leds"] = leds;
   configJsonDoc["brightness"] = brightness;
-
+  configJsonDoc["neofeature"] = neofeature;
+  configJsonDoc["mqttHost"] = mqttHost;
+  configJsonDoc["mqttPort"] = mqttPort;
+  configJsonDoc["mqttClientId"] = mqttClientId;
+  configJsonDoc["mqttLogin"] = mqttLogin;
+  configJsonDoc["mqttPass"] = mqttPass;
+  configJsonDoc["mqttTopic"] = mqttTopic;
+  
 
   if (serializeJson(configJsonDoc, file) == 0) {
     Serial.println(F("Failed to write to file"));
