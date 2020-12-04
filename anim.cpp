@@ -13,6 +13,9 @@ Anim anim = Anim();
 int paletteInd = 0;
 int animInd = 0;
 
+//TODO: do something with this, it's bad thing to reference that var here
+extern unsigned long ms;
+
 Palette * pals[PALS] = {&PalRgb, &PalRainbow, &PalRainbowStripe, &PalParty, &PalHeat, &PalFire, &PalIceBlue, &PalXMas};
 
 Anim::Anim() 
@@ -185,6 +188,30 @@ void setAnimPal() {
   anim.doSetUp();
 }
 
+//sets animation and resets "change" time
+void setAnimation(int animIndex)
+{
+    if ((animIndex < 0 || animIndex >= ANIMS) && (animIndex != 255) ) return; //TODO: get rid of magic number 255 ("OFF" animation)
+    animInd = animIndex;
+    setAnimPal();
+    if (animInd == 0) {
+        ms = millis() + 10000;  //startup animation requires less duration; TODO: generalize somehow these magic constants 10000 here and in main file
+    } else {
+        ms = millis() + INTERVAL;
+    }
+}
+
+void setPalette(int paletteIndex)
+{
+    if (paletteInd < 0 || paletteInd >= PALS) return;
+    paletteInd = paletteIndex;
+    setAnimPal();
+    ms = millis() + INTERVAL;
+}
+
+void setDuration(unsigned long durationMs) {
+    ms = millis() + durationMs;
+}
 
 Color Anim::leds1[MAXLEDS];
 Color Anim::leds2[MAXLEDS];

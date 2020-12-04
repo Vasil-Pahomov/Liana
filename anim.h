@@ -18,6 +18,7 @@
 //probability of spark when in idle plase
 #define SPARK_PROB 3
 
+//TODO: it's better to hide these variables and make functions that accepts appropriate arguments 
 extern int paletteInd;
 extern int animInd;
 
@@ -136,6 +137,12 @@ public:
 };
 
 extern Anim anim;
+
+void setAnimation(int animIndex);
+
+void setPalette(int paletteIndex);
+
+void setDuration(unsigned long durationMs);
 
 void setAnimPal();
 

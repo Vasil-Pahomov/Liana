@@ -67,8 +67,6 @@ void loop() {
   anim.run();
   
   if (millis() > ms && animInd != 255) {// animind == 255 is for turned off strip - it never ends automatically
-    Serial.print("Local IP:");Serial.println(WiFi.localIP());
-
     ms = millis() + INTERVAL; 
     switch ( (animInd <= 0) ? 0 : random(2)) {
       case 0: 

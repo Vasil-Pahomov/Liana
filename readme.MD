@@ -8,9 +8,9 @@
 1. Connect to "Liana" wireless network and tap on pop-up authorization panel. You'll be brought directly to the Liana web interface (if not, go to http://192.168.4.1/ in the browser). You can configure connection to your WiFi network there.
 1. Once you have connected Liana to your WiFi, open "http://liana.local" in web browser of any iOS, MacOS or Windows device on the same network. This does not work for Android however, you should find IP address of the Liana (e.g. in your router admin console, or using https://play.google.com/store/apps/details?id=com.dokoden.dotlocalfinder). Then type "http://<IP_ADDRESS>" in Android browser.
 
-## How to compile (advanced)
-1. Set up Arduino IDE to work with ESP as described [here](https://randomnerdtutorials.com/how-to-install-esp8266-board-arduino-ide/) Note to install 2.5.2 version of ESP8266 board (2.6.0 does not work, not sure why)
-1. Install libraries (all can be found in the library manager)
+## How to compile 
+1. Currently the project is built with PlatformIO (https://platformio.org/) and Visual Studio Code (https://code.visualstudio.com/)
+1. The project uses the following libraries:
 
 	[NeoPixelBus by Makuna](https://github.com/Makuna/NeoPixelBus)
 
@@ -18,13 +18,11 @@
 
 	[PerfWiFiManager by Ryan Downing](https://github.com/r-downing/PersWiFiManager)
 
-	[ArduinoJson](https://arduinojson.org/)
+	[ArduinoJson by bblanchon](https://arduinojson.org/)
 
-	[EspHtmlTemplateProcessor](https://github.com/plapointe6/EspHtmlTemplateProcessor)
+	[EspHtmlTemplateProcessor by plapointe6](https://github.com/plapointe6/EspHtmlTemplateProcessor)
 
-1. Clone the repository (or download and unpack ZIP)
-1. Upload data files to SPIFFS with [the plugin](https://github.com/esp8266/arduino-esp8266fs-plugin)
-1. Compile and run the sketch
+1. There's no detailed step-by-step instructions on compilation set-up yet, sorry. You can easily google those.
 
 ## Wiring
 ![Wiring diagram](https://raw.githubusercontent.com/Vasil-Pahomov/Liana/master/pics/Diagram.png)
@@ -38,3 +36,15 @@ Currently, when unit is powered on, it starts to play animations in random order
 The control interface is accessible at "http://liana.local" on Apple devces. For Android and Windows devices, you use IP address of your strip, which can be found out through serial port output or in the DHCP status page of your router.
 There's special animation at the end of the list (called 'Magic'), designed for New Year trees mainly. When it's selected, you can control the lights with your device accelerometer (as shown in this video: https://youtu.be/ZXqNeq31DUs). You tilt the device to alter "target point", roll it to change color and lunge to highlight.
 Note: this certainly works for mobile devices, not for laptops! Also it doesn't work in Chrome (thanks Google, they disabled access to device sensors in non-https sites).
+
+## MQTT operation
+MQTT broker connection is set up in web interface. Liana works as MQTT client only.
+Commands are sent in plain text. Below description of commands goes. **{XXX}** is replaced with actual value of parameter
+1. **on** - turn on
+1. **off** - turn off
+1. **palette={palette index}** - set palette, index numbering starts from 0
+1. **animation={animation index}** - set animation, index numbering starts from 0
+1. **duration={seconds}** - sets current effect (palette/animation) duration; random cycling starts after specified time elapses
+1. **brightness={brightness}** - sets brigthness (0..255)
+1. **brightness up** - increases brightness (exponential)
+1. **brightness down** - decreases brightness ((exponential)
