@@ -8,6 +8,9 @@
 WiFiClient wifiClient;
 PubSubClient pubSubClient(wifiClient);
 
+unsigned long lastConnAttemptMs;
+#define MQTT_CONNECT_INTERVAL 10000
+
 void mqttCallback(char* topic, byte* payload, unsigned int length) {
     if (strstr((char*)payload, "on") == (char*)payload) {
         setAnimation(0);
@@ -56,25 +59,28 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
 }
 
 void mqttReconnect() {
-    if (wifiIsConnected() && !pubSubClient.connected()) {
-        Serial.print("Attempting MQTT connection to ");
-        Serial.print(currentConfig.mqttHost);
-        Serial.print(':');
-        Serial.print(currentConfig.mqttPort);
-        Serial.print(", login:");
-        Serial.print(currentConfig.mqttLogin.c_str());
-        Serial.print(", pass:");
-        Serial.print(currentConfig.mqttPass.c_str());
-        Serial.print('-');
+    if (millis() < (lastConnAttemptMs + MQTT_CONNECT_INTERVAL)) return;
+    
+    lastConnAttemptMs = millis();
 
-        if (pubSubClient.connect(currentConfig.mqttClientId.c_str(), currentConfig.mqttLogin.c_str(), currentConfig.mqttPass.c_str())) {
-            Serial.println("connected");
-            Serial.println(pubSubClient.connected());
-            pubSubClient.subscribe(currentConfig.mqttTopic.c_str());
-        } else {
-            Serial.print("failed, rc=");
-            Serial.println(pubSubClient.state());
-        }
+    Serial.print(pubSubClient.connected());
+    Serial.print("Attempting MQTT connection to ");
+    Serial.print(currentConfig.mqttHost);
+    Serial.print(':');
+    Serial.print(currentConfig.mqttPort);
+    Serial.print(", login:");
+    Serial.print(currentConfig.mqttLogin.c_str());
+    Serial.print(", pass:");
+    Serial.print(currentConfig.mqttPass.c_str());
+    Serial.print('-');
+
+    if (pubSubClient.connect(currentConfig.mqttClientId.c_str(), currentConfig.mqttLogin.c_str(), currentConfig.mqttPass.c_str())) {
+        Serial.print(pubSubClient.connected());
+        Serial.println("connected");
+        pubSubClient.subscribe(currentConfig.mqttTopic.c_str());
+    } else {
+        Serial.print("failed, rc=");
+        Serial.println(pubSubClient.state());
     }
 }
 
@@ -88,10 +94,8 @@ void mqttSetup() {
 
 void mqttRun() {
     if (currentConfig.mqttHost.length() > 0) {
-        if (WiFi.status() == WL_CONNECTED && !pubSubClient.connected()) {
+        if (WiFi.status() == WL_CONNECTED && !pubSubClient.loop()) {
             mqttReconnect();
-        } else {
-            pubSubClient.loop();
-        }
+        } 
     }
 }
