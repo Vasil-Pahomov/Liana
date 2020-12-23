@@ -20,6 +20,7 @@ Be sure you use appropriate power source; most of ESP8266 board have voltage sta
 1. Setting up PlatformIO and Visual Studio Code is described here: https://docs.platformio.org/en/latest/integration/ide/vscode.html
 1. All library dependencies are enumerated in platformio.ini file and should be downloaded automatically.
 1. Be sure to set up your board settings in platformio.ini file (at least COM port for downloading)
+1. Don't forget to upload SPIFFS image (Run task "Upload Filesystem Image (nodemcuv2)")
 
 ## Controlling the unit
 Currently, when unit is powered on, it starts to play animations in random order, changing every 30 seconds. With web browser, you can control animations and palettes manually. Also you can switch the strip on and off.
