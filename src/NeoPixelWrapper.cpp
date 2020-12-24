@@ -53,16 +53,19 @@ public:
       case NeoPixelType_Rbg:
         _pRbg = new NeoPixelBus<NeoRbgFeature,NeoEsp8266Uart1800KbpsMethod>(countPixels, pin);
         _pRbg->Begin();
+        Serial.println("RBG");
       break;
 
       case NeoPixelType_Rgbw:
         _pRgbw = new NeoPixelBus<NeoRgbwFeature,NeoEsp8266Uart1800KbpsMethod>(countPixels, pin);
         _pRgbw->Begin();
+        Serial.println("RGBW");
       break;
 
       case NeoPixelType_Grbw:
         _pGrbw = new NeoPixelBus<NeoGrbwFeature,NeoEsp8266Uart1800KbpsMethod>(countPixels, pin);
         _pGrbw->Begin();
+        Serial.println("GRBW");
       break;
     }
   }
