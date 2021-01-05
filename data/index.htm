@@ -98,9 +98,9 @@ function connectws() {
 document.addEventListener("DOMContentLoaded", start);
 
 function start() {
+	document.getElementById("maigcc").style.display = window.DeviceOrientationEvent ? '' : 'none';
 	connectws();
 }
-
 
 </script>
 
@@ -121,7 +121,8 @@ function start() {
 				<input id="a6" type="radio" name="a" value="6" onclick="onAPChange()"/><label for="a6">Полосы</label>
 				<input id="a7" type="radio" name="a" value="7" onclick="onAPChange()"/><label for="a7">Полёт</label>
 				<input id="a8" type="radio" name="a" value="8" onclick="onAPChange()"/><label for="a8">Пульс</label>
-				<input id="a100" type="radio" name="a" value="100" onclick="onAPChange()"/><label for="a100">МАГИЯ</label>
+				<input id="a9" type="radio" name="a" value="9" onclick="onAPChange()"/><label for="a9">Статика</label>
+				<div id="magicc"><input id="a100" type="radio" name="a" value="100" onclick="onAPChange()"/><label for="a100">МАГИЯ</label></div>
 			</div>
 			<div class="col">
 				<input id="p0" type="radio" name="p" value="0" onclick="onAPChange()"/><label for="p0">
@@ -147,6 +148,9 @@ function start() {
 				</label>
 				<input id="p7" type="radio" name="p" value="7" onclick="onAPChange()"/><label for="p7">
 					<span style="background: linear-gradient(90deg, #000 0%, #FF0000 33%, #00FF00 66%, #000 100%);"></span>
+				</label>
+				<input id="p8" type="radio" name="p" value="8" onclick="onAPChange()"/><label for="p8">
+					<span style="background: linear-gradient(90deg, #000 0%, #FFFFFF 25%, #FF0000 50%, #FFFFFF 75%, #000 100%);"></span>
 				</label>
 			</div>
 		</div>

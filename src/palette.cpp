@@ -63,6 +63,12 @@ Color PalFire_[] =
 Palette PalFire = { 6, PalFire_ };
 
 
+Color PalBLR_[] = 
+{
+    0xe0e0e0, 0xf00000, 0xe0e0e0
+};
+Palette PalBLR = { 3, PalBLR_};
+
 // palettes below are taken from http://www.color-hex.com/color-palettes/ (and modified)
 
 Color PalIceBlue_[] = 

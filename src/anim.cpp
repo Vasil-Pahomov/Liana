@@ -5,18 +5,20 @@
 #include "brightness.h"
 #include "config.h"
 #include "NeoPixelWrapper.cpp"
+#include "math.h"
 
 NeoPixelWrapper * strip;
 
 Anim anim = Anim();
 
+//TODO: hide inside the class, don't expose
 int paletteInd = 0;
 int animInd = 0;
 
 //TODO: do something with this, it's bad thing to reference that var here
 extern unsigned long ms;
 
-Palette * pals[PALS] = {&PalRgb, &PalRainbow, &PalRainbowStripe, &PalParty, &PalHeat, &PalFire, &PalIceBlue, &PalXMas};
+Palette * pals[PALS] = {&PalRgb, &PalRainbow, &PalRainbowStripe, &PalParty, &PalHeat, &PalFire, &PalIceBlue, &PalXMas, &PalBLR};
 
 Anim::Anim() 
 {
@@ -76,6 +78,13 @@ void Anim::run()
 
 void Anim::setUp()
 {
+    if (!heigthTransTable) {
+        heigthTransTable = (byte*)malloc(ledsNum);
+      for (int i=0;i<ledsNum;i++) {
+        heigthTransTable[i] = (byte)floorf(255.0*(1.0-sqrtf(1.0-(float)i/(float)ledsNum)));
+      }
+    }
+
    //pinMode(LED_BUILTIN, OUTPUT);  
     transms = millis() + TRANSITION_MS;
 
@@ -153,6 +162,11 @@ void Anim::setAnim(byte animInd)
         case 8: 
             setUpImpl = &Anim::animPulse_SetUp;
             runImpl = &Anim::animPulse_Run;
+            setUpOnPalChange = false;
+        break;                                
+        case 9: 
+            setUpImpl = &Anim::animStatic_SetUp;
+            runImpl = &Anim::animStatic_Run;
             setUpOnPalChange = false;
         break;                                
         case 100://special "magic" animation

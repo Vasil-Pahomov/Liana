@@ -21,6 +21,8 @@
 
 //#define USE_START_ANIMATION //start animation is used in cycling as well as other animations
 
+//#define USE_STATIC_BRB_AFTER_START // switch to static BRB after start animation
+
 unsigned long ms = 10000;//startup animation duration, 10000 for "release" AnimStart
 
 void setup() { 
@@ -73,12 +75,20 @@ void loop() {
       {
         Serial.print(F("anim->"));
         int prevAnimInd = animInd;
+#ifdef USE_STATIC_BRB_AFTER_START
+        if (animInd == 0) {
+          paletteInd = 8; //BRB
+          animInd = 9; //static
+        } else
+#endif
+        {
 #ifdef USE_START_ANIMATION
         while (prevAnimInd == animInd) animInd = random(ANIMS+1);
         if (animInd == 0) ms = millis() + 10000;//startup animation has fixed 10 seconds length
 #else
         while (prevAnimInd == animInd) animInd = random(ANIMS) + 1;
-#endif        
+#endif   
+        }     
         setAnimPal();
         wsNotify(-1);
         break;

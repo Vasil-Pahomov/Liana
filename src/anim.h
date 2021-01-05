@@ -3,7 +3,7 @@
 #include "palette.h"
 
 #define ANIMS 8 //number of animations (not including start one) to cycle randomly
-#define PALS 8 //number of palettes
+#define PALS 9 //number of palettes
 #define INTERVAL 30000 //change interval, msec
 
 #define MAXLEDS 1024 // maximum number of LEDs in the strip TODO: switch to dynamic arrays to save RAM
@@ -29,6 +29,7 @@ private:
 
     int ledsNum;//actual number of LEDs
     
+
     //Color arrays - two for making transition
     static Color leds1[MAXLEDS];
     static Color leds2[MAXLEDS];
@@ -56,6 +57,9 @@ private:
     //whether to call SetUp on palette change
     //(some animations require full transition with fade, otherwise the colors would change in a step, some not)
     bool setUpOnPalChange;
+
+    //height translation table (used by some effects to linarly align data across NY tree assuming it's conic)
+    byte * heigthTransTable;
 
     Color curColor = Color(0);
     Color prevColor = Color(0);
@@ -120,6 +124,9 @@ private:
 
     void animPulse_SetUp();
     void animPulse_Run();
+
+    void animStatic_SetUp();
+    void animStatic_Run();
 
     void animMagic_SetUp();
     void animMagic_Run();
