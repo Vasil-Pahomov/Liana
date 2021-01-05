@@ -26,7 +26,7 @@ Be sure you use appropriate power source; most of ESP8266 board have voltage sta
 Currently, when unit is powered on, it starts to play animations in random order, changing every 30 seconds. With web browser, you can control animations and palettes manually. Also you can switch the strip on and off.
 The control interface is accessible at "http://liana.local" on Apple devces. For Android and Windows devices, you use IP address of your strip, which can be found out through serial port output or in the DHCP status page of your router.
 There's special animation at the end of the list (called 'Magic'), designed for New Year trees mainly. When it's selected, you can control the lights with your device accelerometer (as shown in this video: https://youtu.be/ZXqNeq31DUs). You tilt the device to alter "target point", roll it to change color and lunge to highlight.
-Note: this certainly works for mobile devices, not for laptops! Also it doesn't work in Chrome (thanks Google, they disabled access to device sensors in non-https sites).
+IMPORTANT NOTE: the Magic animation is hidden when browser restricts access to mobile device sensors (https://w3c.github.io/deviceorientation/#security-and-privacy). Unfortunately the restriction applies to all non-HTTPS sites. Since setting up proper HTTPS on local devices is cumbersome, the only way I know to make this animation work is using Chrome and enable `--unsafely-treat-insecure-origin-as-secure` option in chrome://flags and specify your IP address in the option value textbox.
 
 ## MQTT operation
 MQTT broker connection is set up in web interface. Liana works as MQTT client only.
