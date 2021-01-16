@@ -6,8 +6,8 @@
 void Anim::animPixieDust_SetUp() {
     Serial.print(F("(pixiedust)"));
     phase = 0;
-    curColor = palette->getPalColor((float)rng()/256);
     prevColor = palette->getPalColor((float)rng()/256);
+    curColor = palette->getDifferentColor(prevColor);
     inc = random(2)*2-1;
     if (inc > 0) {
         phase = -DUST_LENGTH/2;
