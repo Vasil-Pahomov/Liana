@@ -78,10 +78,10 @@ void Anim::run()
 
 void Anim::setUp()
 {
-    if (!heigthTransTable) {
-        heigthTransTable = (byte*)malloc(ledsNum);
+    if (!heightTransTable) {
+        heightTransTable = (byte*)malloc(ledsNum);
       for (int i=0;i<ledsNum;i++) {
-        heigthTransTable[i] = (byte)floorf(255.0*(1.0-sqrtf(1.0-(float)i/(float)ledsNum)));
+        heightTransTable[i] = (byte)floorf(255.0*(1.0-sqrtf(1.0-(float)i/(float)ledsNum)));
       }
     }
 
@@ -180,17 +180,6 @@ void Anim::setAnim(byte animInd)
             setUpOnPalChange = false;
         break;
     }
-}
-
-unsigned int rng() {
-    static unsigned int y = 0;
-    y += micros(); // seeded with changing number
-    y ^= y << 2; y ^= y >> 7; y ^= y << 7;
-    return (y);
-}
-
-byte rngb() {
-    return (byte)rng();
 }
 
 //sets animation and palette to values specified in animInd and paletteInd, 

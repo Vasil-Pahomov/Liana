@@ -2,6 +2,11 @@
 #define color_h
 #include <Arduino.h>
 
+unsigned int rng();
+
+byte rngb();
+
+
 struct Color
 {
     union
@@ -71,10 +76,9 @@ struct Color
       b = ( (b + color.b) <= 255) ? (b + color.b) : 255;
     }
 
-    //checks whether this color is visually close to given one
-    byte isCloseTo(Color c) {
-      int diff = abs(r-c.r) + abs(g-c.g) + abs(b-c.b);
-      return diff <= 220; //220 is magic number. Low values give "true" on closer colors, while higher can cause infinite loop while trying to find different color
+    //returns visual difference between colors (a kind of)
+    int colorDiff(Color c) {
+      return abs(r-c.r) + abs(g-c.g) + abs(b-c.b);
     }
 
     void println() {

@@ -3,18 +3,21 @@
 void Anim::animStatic_SetUp() {
     Serial.print(F("(static)"));Serial.print(ledsNum);
     glowSetUp();
-    inc = 0;//random(5)-2;
+    inc = random(3)-1;
 }
 
 
 void Anim::animStatic_Run() {   
     for (int i=0;i<ledsNum;i++) {
         if (inc>0) {
-            leds[i] = palette->getPalColor((float)heigthTransTable[i]/255.0); 
+            // bottom to top smooth
+            leds[i] = palette->getPalColor((float)heightTransTable[i]/255.0); 
         } else if (inc<0) {
-            leds[i] = palette->getPalColor((float)heigthTransTable[ledsNum-1-i]/255.0);
+            // top to bottom smooth 
+            leds[i] = palette->getPalColor(1.0-(float)heightTransTable[i]/255.0);
         } else {
-            leds[i] = palette->colors[heigthTransTable[i]*palette->numColors/255];
+            // bottom to top hard
+            leds[i] = palette->colors[heightTransTable[i]*palette->numColors/255];
         }
         glowForEachLed(i);
     }

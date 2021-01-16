@@ -27,4 +27,5 @@ void Anim::animRun_Run() {
         }
     }
     pos = pos + 1;
+    if (pos>255) pos = 0;
 }

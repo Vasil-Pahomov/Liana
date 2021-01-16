@@ -59,7 +59,7 @@ private:
     bool setUpOnPalChange;
 
     //height translation table (used by some effects to linarly align data across NY tree assuming it's conic)
-    byte * heigthTransTable;
+    byte * heightTransTable;
 
     Color curColor = Color(0);
     Color prevColor = Color(0);
@@ -152,9 +152,5 @@ void setPalette(int paletteIndex);
 void setDuration(unsigned long durationMs);
 
 void setAnimPal();
-
-unsigned int rng();
-
-byte rngb();
 
 #endif

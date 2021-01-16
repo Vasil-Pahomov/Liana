@@ -39,7 +39,7 @@ void Anim::animSparkr_Run() {
         leds[pos] = (i > phase)
             ? prevColor 
             : (i == phase) ? sparkleColor : curColor;
-        glowForEachLed(i);
+        glowForEachLed(pos);
     }
     glowRun();
 
@@ -55,9 +55,7 @@ void Anim::animSparkr_Run() {
     if (phase > 2*ledsNum) {
         phase = 0;
         prevColor = curColor;
-        while (prevColor.isCloseTo(curColor)) { 
-          curColor = palette->getPalColor((float)rngb()/256);     
-        }
+        curColor = palette->getDifferentColor(prevColor);
         AnimSparkr_shuffleSeq(seq, ledsNum);
     }
 }
