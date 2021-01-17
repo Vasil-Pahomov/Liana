@@ -23,6 +23,22 @@ struct Palette
     }
 
     /**
+     * Gets the interpolated color with smooth cycling. 
+     * That is, color for i=0 is equal to color for i=1, 
+     * but between these values color go across all the palette.
+     */
+        Color getPalColorCycle(float i)
+    {
+        int i0 = (int)(i*numColors)%(numColors);
+        int i1 = (int)(i*numColors+1)%(numColors);
+
+        // decimal part is used to interpolate between the two colors
+        float t0 = i*numColors - trunc(i*numColors);
+        
+        return colors[i0].interpolate(colors[i1], t0);
+    }
+
+    /**
      * Finds random color from the palette that is visually different from given color
      */
     Color getDifferentColor(Color c) {
