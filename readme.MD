@@ -36,6 +36,6 @@ Commands are sent in plain text. Below description of commands goes. **{XXX}** i
 1. **palette={palette index}** - set palette, index numbering starts from 0
 1. **animation={animation index}** - set animation, index numbering starts from 0
 1. **duration={seconds}** - sets current effect (palette/animation) duration; random cycling starts after specified time elapses
-1. **brightness={brightness}** - sets brigthness (0..255)
+1. **brightness={brightness}** - sets brightness (0..255)
 1. **brightness up** - increases brightness (exponential)
-1. **brightness down** - decreases brightness ((exponential)
+1. **brightness down** - decreases brightness (exponential)
