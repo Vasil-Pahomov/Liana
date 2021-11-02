@@ -16,12 +16,12 @@ class NeoPixelWrapper
 public:
   NeoPixelWrapper() :
       // initialize each member to null
+      _type(NeoPixelType_Rgb),
       _pRgb(NULL),
       _pGrb(NULL),
       _pRbg(NULL),
       _pRgbw(NULL),
-      _pGrbw(NULL),
-      _type(NeoPixelType_Rgb)
+      _pGrbw(NULL)
   {
 
   }
@@ -80,45 +80,18 @@ public:
       case NeoPixelType_Grbw: _pGrbw->Show();  break;
     }
   }
+
   bool CanShow() const
   {
     switch (_type) {
-      case NeoPixelType_Rgb:  _pRgb->CanShow();  break;
-      case NeoPixelType_Grb:  _pGrb->CanShow();  break;
-      case NeoPixelType_Rbg:  _pRbg->CanShow();  break;
-      case NeoPixelType_Rgbw: _pRgbw->CanShow(); break;
-      case NeoPixelType_Grbw: _pGrbw->CanShow(); break;
+      case NeoPixelType_Rgb:  return _pRgb->CanShow();  
+      case NeoPixelType_Grb:  return _pGrb->CanShow(); 
+      case NeoPixelType_Rbg:  return _pRbg->CanShow();
+      case NeoPixelType_Rgbw: return _pRgbw->CanShow();
+      case NeoPixelType_Grbw: return _pGrbw->CanShow();
+      default: return false;
     }
   }
-
-  // replicate all the calls like the above
-    bool IsDirty() const
-    {
-    }
-
-    void Dirty()
-    {
-    }
-
-    void ResetDirty()
-    {
-    }
-
-    uint8_t* Pixels() const
-    {
-    }
-
-    size_t PixelsSize() const
-    {
-    }
-
-    size_t PixelSize() const
-    {
-    }
-
-    uint16_t PixelCount() const
-    {
-    }
 
     void SetPixelColor(uint16_t indexPixel, RgbColor color)
     {

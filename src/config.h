@@ -10,7 +10,7 @@ class LianaConfig {
     void printConfig();
 
   public:
-    LianaConfig() : configJsonDoc(1024),leds(10), brightness(255) {}
+    LianaConfig() : leds(10),  brightness(255), configJsonDoc(1024) {}
        
     int leds;
     int brightness; // brightness adjustment, up to 256

@@ -21,7 +21,7 @@
 
 //#define USE_START_ANIMATION //start animation is used in cycling as well as other animations
 
-#define USE_STATIC_BRB_AFTER_START // switch to static BRB after start animation
+//#define USE_STATIC_BRB_AFTER_START // switch to static BRB after start animation for true Belarussians
 
 unsigned long ms = 6000;//startup animation duration, 10000 for "release" AnimStart
 
