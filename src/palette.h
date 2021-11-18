@@ -68,5 +68,6 @@ extern Palette PalFire;
 extern Palette PalIceBlue;
 extern Palette PalXMas;
 extern Palette PalBLR;
+extern Palette PalNY;
 
 #endif

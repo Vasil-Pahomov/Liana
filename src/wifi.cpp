@@ -22,6 +22,9 @@ void wifiSetUp()
   persWM.onConnect([]() {
     Serial.print("Connected, local IP:");
     Serial.println(WiFi.localIP());
+    WiFi.setAutoConnect(true);
+    WiFi.setAutoReconnect(true);
+    WiFi.persistent(true);
     _wifiConnected = true;
   });
   persWM.onAp([](){

@@ -19,14 +19,18 @@
 #include "wifi.h"
 #include "mqtt.h"
 
+void tests_runAll();
+
 //#define USE_START_ANIMATION //start animation is used in cycling as well as other animations
 
 //#define USE_STATIC_BRB_AFTER_START // switch to static BRB after start animation for true Belarussians
 
-unsigned long ms = 6000;//startup animation duration, 10000 for "release" AnimStart
+unsigned long ms = 10000;//startup animation duration, 10000 default
 
 void setup() { 
   Serial.begin(115200);
+  //tests_runAll();
+
   Serial.println("Entering setup");
   if (SPIFFS.begin()) {
     Serial.println("SPIFFS started");
@@ -34,76 +38,88 @@ void setup() {
     Serial.println("SPIFFS FAILED");
   }
   currentConfig.configLoad();
-  
+
   wifiSetUp();
   mqttSetup();
 
   randomSeed(analogRead(0)*analogRead(1));
   anim.setAnim(animInd);
   anim.setPeriod(20);
-  anim.setPalette(0);
+  while (!currentConfig.isPalEnabled(paletteInd) && paletteInd < PALS-1) { paletteInd++; };
+  anim.setPalette(paletteInd);
   anim.doSetUp();
 
   Serial.println("Setup done");
 }
 
-
 void loop() {
   yield();
   
-  /* this piece of code checks for looping while trying to find different colors
-  for (int pi=0;pi<PALS;pi++) {
-    int c = 0;
-    
-    Serial.print(F("pi="));Serial.print(pi);
-    Color c1 = pals[pi]->getPalColor((float)rngb()/256);
-    Color c2 = c1;
-    while (c1.isCloseTo(c2)) {
-      c = c + 1;
-      c2 = pals[pi]->getPalColor((float)rngb()/256);
-    }
-    Serial.print(F(" c="));Serial.println(c);
-  }
-  /**/
-
   anim.run();
   
   if (millis() > ms && animInd != 255) {// animind == 255 is for turned off strip - it never ends automatically
     ms = millis() + INTERVAL; 
-    switch ( (animInd <= 0) ? 0 : random(2)) {
-      case 0: 
-      {
-        Serial.print(F("anim->"));
-        int prevAnimInd = animInd;
-#ifdef USE_STATIC_BRB_AFTER_START
-        if (animInd == 0) {
-          paletteInd = 8; //BRB
-          animInd = 9; //static
-        } else
-#endif
-        {
-#ifdef USE_START_ANIMATION
-        while (prevAnimInd == animInd) animInd = random(ANIMS+1);
-        if (animInd == 0) ms = millis() + 10000;//startup animation has fixed 10 seconds length
+    
+#ifdef USE_START_ANIMATION  
+    bool changeAnim = currentConfig.getEnabledAnimsCount() > 1;
+    bool changePal = currentConfig.getEnabledPalsCount() > 1;
 #else
-        while (prevAnimInd == animInd) animInd = random(ANIMS) + 1;
-#endif   
-        }     
-        setAnimPal();
-        wsNotify(-1);
-        break;
-      }
-      case 1:
-      {
-        Serial.print(F("pal->"));
-        int prevPalInd = paletteInd;
-        while (prevPalInd == paletteInd) paletteInd = random(PALS);
-        anim.setPalette(paletteInd);
-        Serial.print(paletteInd);
-        break;
+    bool changeAnim = !currentConfig.isAnimEnabled(animInd) ||
+                      ( currentConfig.isAnimEnabled(0)
+                      ? (currentConfig.getEnabledAnimsCount() > 2)
+                      : currentConfig.getEnabledAnimsCount() > 1 );
+    bool changePal = (animInd > 0) && (!currentConfig.isPalEnabled(paletteInd) || (currentConfig.getEnabledPalsCount() > 1));
+#endif
+
+    if (changeAnim && changePal) {
+      if (rngb() & 0x01) {
+        changeAnim = false;
+      } else {
+        changePal = false;
       }
     }
-    Serial.println();
+    
+    if (changeAnim) {
+      Serial.print(F("anim->"));
+      int prevAnimInd = animInd;
+#ifdef USE_STATIC_BRB_AFTER_START
+      if (animInd == 0) {
+        paletteInd = 9; //BRB
+        animInd = 9; //static
+      } else
+#endif
+      {
+        while ((prevAnimInd == animInd) 
+          || !currentConfig.isAnimEnabled(animInd)) { 
+#ifdef USE_START_ANIMATION
+          animInd = random(ANIMS+1);
+#else
+          animInd = random(ANIMS) + 1; 
+          //Serial.printf("%d-%d\r\n", animInd, currentConfig.isAnimEnabled(animInd));
+  #endif
+        }
+        
+        if (animInd == 0) { 
+          ms = millis() + 10000;//startup animation has fixed 10 seconds length
+        }
+
+        setAnimPal();
+        wsNotify(-1);
+      }
+    }
+    if (changePal) {
+      Serial.print(F("pal->"));
+      int prevPalInd = paletteInd;
+      while ((prevPalInd == paletteInd) 
+        || !currentConfig.isPalEnabled(paletteInd)) {
+        paletteInd = random(PALS);
+        //Serial.printf("%d-%d\r\n", paletteInd, currentConfig.isPalEnabled(animInd));
+      }
+
+      anim.setPalette(paletteInd);
+      Serial.print(paletteInd);
+    }
+  Serial.println();
   }
   /**/
 

@@ -1,6 +1,7 @@
 #include <WebSocketsServer.h>
 
 #include "anim.h"
+#include "config.h"
 
 WebSocketsServer webSocket(81); 
 
@@ -11,11 +12,13 @@ extern unsigned long ms;
 //if num is -1, notifies all active connections
 //Sent data is as follows:
 //1st char = 'I'
-//2-3 char - HEX byte, current animation index, -1 if strip is off
-//4-5 char - HEX byte, current palette index
+//2-3 char   - HEX byte, current animation index, -1 if strip is off
+//4-5 char   - HEX byte, current palette inde
+//6-9 char   - HEX word, disabled animations (bit mask)
+//10-13 char - HEX word, disabled palettes (bit mask)
 void wsNotify(int num) {
   char buf[100];
-  sprintf(buf, "I%02X%02X", animInd, paletteInd);
+  sprintf(buf, "I%02X%02X%04X%04X", animInd, paletteInd, currentConfig.getDisabledAnimsMask(), currentConfig.getDisabledPalsMask());
   if (num >= 0) {
     webSocket.sendTXT(num, buf, 0);
   } else {
@@ -47,8 +50,6 @@ void wsSet(uint8_t num, uint8_t * payload, size_t length) {
   animInd = (data >> 8) & 0xFF;
   paletteInd = data & 0xFF;
   if (paletteInd >= PALS) { paletteInd = 0; };
-  Serial.printf("Text: %s, data:%d, a:%d, p:%d", payload, data, animInd, paletteInd); 
-
   setAnimPal();  
 }
 
@@ -62,6 +63,37 @@ void wsInfo(uint8_t num, uint8_t * payload, size_t length) {
     ms = millis() + INTERVAL; //"reset" duration for any animation except start
   }
 }
+
+/* Set disabled/enabled state for animations and palettes
+ * 1 char - 'A' for animation and 'P' for palette
+ * 2 char - 'D' for disabling and 'E' for enabling
+ * 3+ char - decimal number of animation/palette to change state
+ */
+void wsSetDisabled(uint8_t num, uint8_t * payload, size_t length) {
+  bool isEnabling = payload[2] != 'D';
+  int ind = strtol((const char *) &payload[3], NULL, 10);
+
+  switch (payload[1]) {
+    case 'A':
+      if (isEnabling || currentConfig.getEnabledAnimsCount() > (currentConfig.isAnimEnabled(0) && ind != 0 ? 2 : 1)) {
+        currentConfig.setAnimEnabled(ind, isEnabling);
+        currentConfig.configSave();
+      }
+      break;
+    case 'P':
+      if (isEnabling || currentConfig.getEnabledPalsCount() > 1) {
+        Serial.print("Pal change, cnt = "); Serial.println(currentConfig.getEnabledPalsCount());
+        currentConfig.setPalEnabled(ind, isEnabling);
+        currentConfig.configSave();
+      }  else {
+        Serial.print("No pal change, cnt = "); Serial.println(currentConfig.getEnabledPalsCount());
+      }
+      break;
+  }
+  
+  wsNotify(-1); //notify other connections of change
+}
+
 
 
 void wsRun()
@@ -89,6 +121,9 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
           break;
         case 'I':
           wsInfo(num, payload, length);
+          break;
+        case 'D':
+          wsSetDisabled(num, payload, length);
           break;
         default:
           Serial.printf("Unknown WS command: %s", payload);

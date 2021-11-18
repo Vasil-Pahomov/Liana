@@ -2,8 +2,8 @@
 #define anim_h
 #include "palette.h"
 
-#define ANIMS 8 //number of animations (not including start one) to cycle randomly
-#define PALS 9 //number of palettes
+#define ANIMS 9 //number of animations to cycle randomly
+#define PALS 10 //number of palettes
 #define INTERVAL 30000 //change interval, msec
 
 #define MAXLEDS 1024 // maximum number of LEDs in the strip TODO: switch to dynamic arrays to save RAM

@@ -82,3 +82,10 @@ Color PalXMas_[] =
     0xff0000, 0x00ff00
 };
 Palette PalXMas = { 2, PalXMas_};
+
+Color PalNY_[] = 
+{
+    0xffe700, 0xc900ff, 0x2f00ff, 0xff00c1, 0xff00c1
+};
+
+Palette PalNY = {5, PalNY_};
