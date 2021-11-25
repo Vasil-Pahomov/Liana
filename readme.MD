@@ -2,6 +2,7 @@
 ## Как быстро запустить
 1. Подключите плату ESP, светодиодную ленту (гирлянду) и источник питания как показано ниже (подключение)
 1. Загрузите в ESP файлы: [основную прошивку](https://github.com/Vasil-Pahomov/Liana/raw/master/bin/firmware.bin) по адресу 0x000000 и [файловую систему](https://github.com/Vasil-Pahomov/Liana/raw/master/bin/spiffs.bin) по адресу 0x100000. Нужно соответствующим образом выставить настройки: номер COM-порта, размер flash-памяти, режим SPI. Я использовал официальный инструмент Flash download tools (скачать можно [здесь](https://www.espressif.com/en/support/download/other-tools)), и работающие настройки для платы NodeMCU выглядили так:
+
 ![Настройки Flash download tools для NodeMCU](https://raw.githubusercontent.com/Vasil-Pahomov/Liana/master/pics/Download_tool_settings.png)
 
 1. После запуска подключитесь к беспроводной сети под названием "Liana" и нажмите на всплывающую панель с требованием авторизации - откроется web-интерфейс Liana. Если панель не появляется, перейдите по адресу http://192.168.4.1/ в браузере. В интерфейсе можно подключиться к домашней сети WiFi.
