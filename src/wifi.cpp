@@ -22,9 +22,6 @@ void wifiSetUp()
   persWM.onConnect([]() {
     Serial.print("Connected, local IP:");
     Serial.println(WiFi.localIP());
-    WiFi.setAutoConnect(true);
-    WiFi.setAutoReconnect(true);
-    WiFi.persistent(true);
     _wifiConnected = true;
   });
   persWM.onAp([](){
@@ -37,6 +34,8 @@ void wifiSetUp()
   //make connecting/disconnecting non-blocking
   persWM.setConnectNonBlock(true);
 
+  WiFi.persistent(true);
+  
   //in non-blocking mode, program will continue past this point without waiting
   persWM.begin();
 
