@@ -22,7 +22,7 @@
 1. Сейчас проект собран для PlatformIO (https://platformio.org/) и Visual Studio Code (https://code.visualstudio.com/)
 1. Настройки PlatformIO и Visual Studio code хорошо описаны, например, здесь: https://docs.platformio.org/en/latest/integration/ide/vscode.html
 1. Все зависимости прописаны в файле platformio.ini и загружаются автоматически.
-1. Не забудьте прописать параметры планы ESP в platformio.ini (как минимум номер COM-порта для загрузки)
+1. Не забудьте прописать параметры платы ESP в platformio.ini (как минимум номер COM-порта для загрузки)
 1. Не забудьте при прошивке также загрузить образ файловой системы (выполнить задачу "Upload Filesystem Image")
 
 ## Управление модулем
