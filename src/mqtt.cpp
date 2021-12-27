@@ -29,7 +29,7 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
     if (strstr((char*)payload, "duration=") == (char*)payload) {
         setDuration(atol((char*)(payload+9))*1000L);
     } else
-    if (strstr((char*)payload, "brigthness=") == (char*)payload) {
+    if (strstr((char*)payload, "brightness=") == (char*)payload) {
         int bri = atoi((char*)(payload+11));
         if (bri >= 0 && bri <= 255) {
             currentConfig.brightness = bri;
