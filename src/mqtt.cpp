@@ -8,6 +8,8 @@
 WiFiClient wifiClient;
 PubSubClient pubSubClient(wifiClient);
 
+char mqttHost[100];
+
 unsigned long lastConnAttemptMs;
 #define MQTT_CONNECT_INTERVAL 10000
 
@@ -23,16 +25,16 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
     } else 
     if (strstr((char*)payload, "animation=") == (char*)payload) {
         setAnimation(atoi((char*) (payload+10)));
-    }
+    } else
     if (strstr((char*)payload, "duration=") == (char*)payload) {
         setDuration(atol((char*)(payload+9))*1000L);
-    }
+    } else
     if (strstr((char*)payload, "brigthness=") == (char*)payload) {
         int bri = atoi((char*)(payload+11));
         if (bri >= 0 && bri <= 255) {
             currentConfig.brightness = bri;
         }
-    }
+    } else
     if (strstr((char*)payload, "brigthness up") == (char*)payload) {
         if (currentConfig.brightness) {
             currentConfig.brightness *= 2;
@@ -49,12 +51,7 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
         Serial.printf("BRI=%d\n", currentConfig.brightness);
     }
     else {
-        Serial.print("MQTT command unknown [");
-        Serial.print(topic);
-        Serial.print("] ");
-        for (int i = 0; i < length; i++) {
-            Serial.print((char)payload[i]);
-        }
+        Serial.printf("MQTT command unknown: length=%d, payload=%s\r\n", length, payload);
     }
 }
 
@@ -63,30 +60,22 @@ void mqttReconnect() {
     
     lastConnAttemptMs = millis();
 
-    Serial.print(pubSubClient.connected());
-    Serial.print("Attempting MQTT connection to ");
-    Serial.print(currentConfig.mqttHost);
-    Serial.print(':');
-    Serial.print(currentConfig.mqttPort);
-    Serial.print(", login:");
-    Serial.print(currentConfig.mqttLogin.c_str());
-    Serial.print(", pass:");
-    Serial.print(currentConfig.mqttPass.c_str());
-    Serial.print('-');
+    Serial.printf("Attempting MQTT connection to %s:%d, login=%s, pass=%s...", 
+        currentConfig.mqttHost.c_str(), currentConfig.mqttPort, currentConfig.mqttLogin.c_str(), currentConfig.mqttPass.c_str());
 
     if (pubSubClient.connect(currentConfig.mqttClientId.c_str(), currentConfig.mqttLogin.c_str(), currentConfig.mqttPass.c_str())) {
-        Serial.print(pubSubClient.connected());
-        Serial.println("connected");
+        Serial.println(F("connected"));
         pubSubClient.subscribe(currentConfig.mqttTopic.c_str());
     } else {
-        Serial.print("failed, rc=");
+        Serial.print(F("failed, rc="));
         Serial.println(pubSubClient.state());
     }
 }
 
 void mqttSetup() {
     if (currentConfig.mqttHost.length() > 0) {
-        pubSubClient.setServer(currentConfig.mqttHost.c_str(), currentConfig.mqttPort);
+        strcpy(mqttHost, currentConfig.mqttHost.c_str());
+        pubSubClient.setServer(mqttHost, currentConfig.mqttPort);
         pubSubClient.setCallback(mqttCallback);
     } else {
     }

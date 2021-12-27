@@ -35,6 +35,7 @@
 ## Управление по MQTT
 Соединение с брокером MQTT настраивается через web-интерфейс. Liana работает только как клиент MQTT.
 Команды отправляются простым текстом. Ниже перечислены эти команды. Выражения в фигурных скобках **{XXX}** должны быть заменены на соответствующие значения
+В конце команд, содержащих параметры, рекомендуется добавлять пробел или символы CR/LF.
 1. **on** - включить
 1. **off** - выключить
 1. **palette={номер палитры}** - выбрать палитру, номера начинаются с 0
@@ -79,7 +80,8 @@ IMPORTANT NOTE: the Magic animation is hidden when browser restricts access to m
 
 ## MQTT operation
 MQTT broker connection is set up in web interface. Liana works as MQTT client only.
-Commands are sent in plain text. Below description of commands goes. **{XXX}** is replaced with actual value of parameter
+Commands are sent in plain text. Below description of commands goes. **{XXX}** is replaced with actual value of parameter.
+It's recommended to add a space or CR/LF chars to the end of parametrized commands.
 1. **on** - turn on
 1. **off** - turn off
 1. **palette={palette index}** - set palette, index numbering starts from 0
