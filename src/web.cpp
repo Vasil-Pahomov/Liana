@@ -120,6 +120,7 @@ void webOnMqttSettings() {
 
 
 void webSetup() {
+  Serial.println("WebServer is setuping");
     webServer.onNotFound([&]() {
       Serial.println("NF: " + webServer.uri());
       if (!webFileRead(webServer.uri())) {
@@ -133,4 +134,5 @@ void webSetup() {
   webServer.on("/mqtt", HTTP_POST, webOnMqttSettings);
 
   webServer.begin();
+  Serial.println("WebServer setuped");
 }

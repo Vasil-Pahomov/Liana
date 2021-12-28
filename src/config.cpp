@@ -7,8 +7,11 @@ LianaConfig currentConfig;
 
 void LianaConfig::configLoad() {
   File file = SPIFFS.open(CONFIG_FILE_NAME, "r");
+  Serial.println("Config is loading");
   if (deserializeJson(configJsonDoc, file)) {
     Serial.println("Config read error");
+  } else {
+    Serial.println("Config loaded");
   }
   file.close();
   leds = configJsonDoc["leds"];

@@ -24,7 +24,7 @@ bool _wifiConnected = false;
 
 void wifiSetUp()
 {
-  webSetup();
+  Serial.println("Wifi is configuring");
   
   SPIFFS.begin();
 
@@ -52,7 +52,9 @@ void wifiSetUp()
     Serial.println("Error starting MDNS");
   }
   
+  webSetup();
   wsSetup();
+  Serial.println("Wifi configured");
 }
 
 void wifiLoop()
