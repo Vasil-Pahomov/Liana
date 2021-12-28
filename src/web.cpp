@@ -1,9 +1,15 @@
+#if defined(ESP8266)
 #include <ESP8266WebServer.h>
+ESP8266WebServer webServer(80);
+#elif defined(ESP32)
+#include <WebServer.h>
+WebServer webServer(80);
+#else
+#error "Unsupported board class"
+#endif
 #include <EspHtmlTemplateProcessor.h>
 #include "config.h"
 
-
-ESP8266WebServer webServer(80);
 EspHtmlTemplateProcessor templateProcessor(&webServer);
 
 static constexpr const char *redirectStr = "<script>window.location='/'</script>Not found. <a href='/'>Home</a>";

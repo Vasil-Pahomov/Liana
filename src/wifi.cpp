@@ -1,6 +1,15 @@
 #include <DNSServer.h>
 #include <PersWiFiManager.h>
+#if defined(ESP8266)
 #include <ESP8266mDNS.h>
+#elif defined(ESP32)
+#include <ESPmDNS.h>
+#else
+#error "Unsupported board class"
+#endif
+
+#include <FS.h>
+#include <FileReader.h>
 
 #include "web.h"
 #include "websocket.h"

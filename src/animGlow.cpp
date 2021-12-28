@@ -1,5 +1,7 @@
 #include "anim.h"
 
+typedef signed char         sint8_t;
+
 void Anim::glowSetUp()
 {
     braPhaseSpd = random(8,13);
