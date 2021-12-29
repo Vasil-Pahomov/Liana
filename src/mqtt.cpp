@@ -35,7 +35,7 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
             currentConfig.brightness = bri;
         }
     } else
-    if (strstr((char*)payload, "brigthness up") == (char*)payload) {
+    if (strstr((char*)payload, "brightness up") == (char*)payload) {
         if (currentConfig.brightness) {
             currentConfig.brightness *= 2;
             if (currentConfig.brightness > 255) {
@@ -46,7 +46,7 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
         }
         Serial.printf("BRI=%d\n", currentConfig.brightness);
     } else
-    if (strstr((char*)payload, "brigthness down") == (char*)payload) {
+    if (strstr((char*)payload, "brightness down") == (char*)payload) {
         currentConfig.brightness /= 2;
         Serial.printf("BRI=%d\n", currentConfig.brightness);
     }
