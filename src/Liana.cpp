@@ -1,15 +1,22 @@
 #include <WebSocketsServer.h>
+//includes
+#include <PersWiFiManager.h>
+#include <ArduinoJson.h>
+#if defined(ESP8266)
 #include <ESP8266WiFi.h>
-#include <ESP8266WiFiMulti.h>
+#include <ESP8266WebServer.h>
+#elif defined(ESP32)
+#include <WiFi.h>
+#include <WebServer.h>
+#else
+#error "Unsupported board class"
+#endif
 #include <WiFiClient.h>
-#include <ESP8266mDNS.h>
 #include <DNSServer.h>
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
-#include <PersWiFiManager.h>
 #include <EspHtmlTemplateProcessor.h>
 #include <FileReader.h>
-#include <ArduinoJson.h>
 
 #include "palette.h"
 #include "anim.h"
@@ -18,6 +25,8 @@
 #include "websocket.h"
 #include "wifi.h"
 #include "mqtt.h"
+
+
 
 void tests_runAll();
 
