@@ -16,7 +16,7 @@ void Anim::animRun_Run() {
     
     int p = pos;
     for (int i=0;i<ledsNum;i++) {
-        Color c = palette->getPalColor((float)p/256);
+        Color c = palette->getPalColorCycle((float)p/256);
         leds[i] = c;
    
         p = p + inc;
@@ -27,4 +27,5 @@ void Anim::animRun_Run() {
         }
     }
     pos = pos + 1;
+    if (pos>255) pos = 0;
 }

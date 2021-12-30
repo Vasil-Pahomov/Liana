@@ -63,6 +63,12 @@ Color PalFire_[] =
 Palette PalFire = { 6, PalFire_ };
 
 
+Color PalBLR_[] = 
+{
+    0xe0e0e0, 0xf00000, 0xe0e0e0
+};
+Palette PalBLR = { 3, PalBLR_};
+
 // palettes below are taken from http://www.color-hex.com/color-palettes/ (and modified)
 
 Color PalIceBlue_[] = 
@@ -76,3 +82,10 @@ Color PalXMas_[] =
     0xff0000, 0x00ff00
 };
 Palette PalXMas = { 2, PalXMas_};
+
+Color PalNY_[] = 
+{
+    0xffe700, 0xc900ff, 0x2f00ff, 0xff00c1, 0xff00c1
+};
+
+Palette PalNY = {5, PalNY_};

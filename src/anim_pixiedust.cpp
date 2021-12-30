@@ -6,8 +6,8 @@
 void Anim::animPixieDust_SetUp() {
     Serial.print(F("(pixiedust)"));
     phase = 0;
-    curColor = palette->getPalColor((float)rng()/256);
     prevColor = palette->getPalColor((float)rng()/256);
+    curColor = palette->getDifferentColor(prevColor);
     inc = random(2)*2-1;
     if (inc > 0) {
         phase = -DUST_LENGTH/2;
@@ -28,7 +28,7 @@ void Anim::animPixieDust_Run() {
         if (phase >= 4*ledsNum) {
             phase = -DUST_LENGTH/2;
             prevColor = curColor;
-            curColor = palette->getPalColor((float)rngb()/256);     
+            curColor = palette->getDifferentColor(prevColor);     
         }
     } else {
         for (int i=0;i<ledsNum;i++) {
@@ -39,9 +39,7 @@ void Anim::animPixieDust_Run() {
         if (phase <= -3*ledsNum) {
             phase = ledsNum + DUST_LENGTH/2;
             prevColor = curColor;
-            while (prevColor.isCloseTo(curColor)) { 
-              curColor = palette->getPalColor((float)rngb()/256);     
-            }
+            curColor = palette->getDifferentColor(prevColor);
         }
     }
     glowRun();

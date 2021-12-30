@@ -1,19 +1,37 @@
+#include <DNSServer.h>
+#include <PersWiFiManager.h>
+#if defined(ESP8266)
+#include <ESP8266mDNS.h>
+#elif defined(ESP32)
+#include <ESPmDNS.h>
+#else
+#error "Unsupported board class"
+#endif
+
+#include <FS.h>
+#include <FileReader.h>
+
+#include "web.h"
+#include "websocket.h"
+
 #define WIFI_AP_SSID "Liana"
 #define WIFI_CONNECTION_TIMEOUT 10000  //Timeout (in milliseconds) of waiting for WiFi connection
 #define MDNS_NAME "liana"
 
 DNSServer dnsServer;
 PersWiFiManager persWM(webServer, dnsServer);
+bool _wifiConnected = false;
 
 void wifiSetUp()
 {
-  webSetup();
+  Serial.println("Wifi is configuring");
   
   SPIFFS.begin();
 
   persWM.onConnect([]() {
     Serial.print("Connected, local IP:");
     Serial.println(WiFi.localIP());
+    _wifiConnected = true;
   });
   persWM.onAp([](){
     Serial.println("AP MODE");
@@ -25,6 +43,8 @@ void wifiSetUp()
   //make connecting/disconnecting non-blocking
   persWM.setConnectNonBlock(true);
 
+  WiFi.persistent(true);
+  
   //in non-blocking mode, program will continue past this point without waiting
   persWM.begin();
 
@@ -32,8 +52,9 @@ void wifiSetUp()
     Serial.println("Error starting MDNS");
   }
   
+  webSetup();
   wsSetup();
-  otaSetup();
+  Serial.println("Wifi configured");
 }
 
 void wifiLoop()
@@ -41,6 +62,10 @@ void wifiLoop()
   persWM.handleWiFi();
   webServer.handleClient();
   wsRun();
-  otaRun();
   dnsServer.processNextRequest();
+}
+
+bool wifiIsConnected()
+{
+  return _wifiConnected;
 }

@@ -2,6 +2,10 @@
 #define anim_h
 #include "palette.h"
 
+#define ANIMS 9 //number of animations to cycle randomly
+#define PALS 10 //number of palettes
+#define INTERVAL 30000 //change interval, msec
+
 #define MAXLEDS 1024 // maximum number of LEDs in the strip TODO: switch to dynamic arrays to save RAM
 
 #define TRANSITION_MS 1000 // transition time between animations, ms
@@ -14,7 +18,9 @@
 //probability of spark when in idle plase
 #define SPARK_PROB 3
 
-
+//TODO: it's better to hide these variables and make functions that accepts appropriate arguments 
+extern int paletteInd;
+extern int animInd;
 
 class Anim {
     
@@ -23,6 +29,7 @@ private:
 
     int ledsNum;//actual number of LEDs
     
+
     //Color arrays - two for making transition
     static Color leds1[MAXLEDS];
     static Color leds2[MAXLEDS];
@@ -50,6 +57,9 @@ private:
     //whether to call SetUp on palette change
     //(some animations require full transition with fade, otherwise the colors would change in a step, some not)
     bool setUpOnPalChange;
+
+    //height translation table (used by some effects to linarly align data across NY tree assuming it's conic)
+    byte * heightTransTable;
 
     Color curColor = Color(0);
     Color prevColor = Color(0);
@@ -115,6 +125,9 @@ private:
     void animPulse_SetUp();
     void animPulse_Run();
 
+    void animStatic_SetUp();
+    void animStatic_Run();
+
     void animMagic_SetUp();
     void animMagic_Run();
 public:
@@ -122,18 +135,22 @@ public:
 
     Anim();
     void setPeriod(byte period);
-    void setPalette(Palette * pal);
+    void setPalette(int palind);
     void setAnim(byte animInd);
     void run();
     void doSetUp();
     void setMagicParams(byte ind, byte position, byte color, boolean isBoom);
-    
-    
 
 };
 
-unsigned int rng();
+extern Anim anim;
 
-byte rngb();
+void setAnimation(int animIndex);
+
+void setPalette(int paletteIndex);
+
+void setDuration(unsigned long durationMs);
+
+void setAnimPal();
 
 #endif

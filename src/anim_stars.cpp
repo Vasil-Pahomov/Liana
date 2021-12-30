@@ -8,7 +8,8 @@
 void Anim::animStars_SetUp() {
     Serial.print(F("(stars)"));
     //inc is (average) interval between appearance of new stars
-    inc = random (2, 5);
+    inc = 10 - ledsNum / 20;
+    if (inc < 0) inc=0;
 
     //reset all phases
     memset(seq, 255, ledsNum); 

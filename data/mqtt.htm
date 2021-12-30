@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+	<meta charset="utf-8"/>
+	<title>Настройки MQTT</title>
+	<link rel="stylesheet" type="text/css" href="s.css?v1">
+	<script>
+document.addEventListener("DOMContentLoaded", start);
+
+function start() {
+	document.getElementById('neofeature').value = '{{neofeature}}';
+}
+	</script>
+</head>
+
+<body>
+	<div style='text-align:left;display:inline-block;width:320px;padding:5px'>
+		<form method='post' action='/mqtt'>
+			<label>Хост сервера
+				<input id='mqttHost' name='mqttHost' placeholder='Хост сервера' value='{{mqttHost}}'>
+			</label>
+			<label>Порт сервера
+				<input id='mqttPort' name='mqttPort' placeholder='Порт сервера' value='{{mqttPort}}'>
+			</label>
+			<label>Логин
+				<input id='mqttLogin' name='mqttLogin' placeholder='Логин' value='{{mqttLogin}}'>
+			</label>
+			<label>Пароль
+				<input id='mqttPass' name='mqttPass' placeholder='Пароль' value='{{mqttPass}}'>
+			</label>
+			<label>Топик
+				<input id='mqttTopic' name='mqttTopic' placeholder='Топик' value='{{mqttTopic}}'>
+			</label>
+			<label>ID клиента
+				<input id='mqttClientID' name='mqttClientId' placeholder='ID клиента' value='{{mqttClientId}}'>
+			</label>
+			<br><br>
+
+			<button type='submit'>Применить</button>
+		</form>
+		<br>
+		<a href="javascript:history.back()">Назад</a> | 
+		<a href="/">Домой</a>
+	</div>
+</body>
+
+</html>

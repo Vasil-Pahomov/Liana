@@ -2,6 +2,15 @@
 #include <NeoPixelBus.h>
 //https://github.com/Makuna/NeoPixelBus/issues/103
 
+
+#if defined(ESP8266)
+#define NP_METHOD NeoEsp8266Uart1800KbpsMethod
+#elif defined(ESP32)
+#define NP_METHOD NeoEsp32Rmt0800KbpsMethod
+#else
+#error "Unsupported board class"
+#endif
+
 enum NeoPixelType
 {
   NeoPixelType_Rgb  = 0,
@@ -16,12 +25,12 @@ class NeoPixelWrapper
 public:
   NeoPixelWrapper() :
       // initialize each member to null
+      _type(NeoPixelType_Rgb),
       _pRgb(NULL),
       _pGrb(NULL),
       _pRbg(NULL),
       _pRgbw(NULL),
-      _pGrbw(NULL),
-      _type(NeoPixelType_Rgb)
+      _pGrbw(NULL)
   {
 
   }
@@ -39,30 +48,33 @@ public:
     switch (_type) {
 
       case NeoPixelType_Rgb:
-        _pRgb = new NeoPixelBus<NeoRgbFeature,NeoEsp8266Uart1800KbpsMethod>(countPixels, pin);
+        _pRgb = new NeoPixelBus<NeoRgbFeature,NP_METHOD>(countPixels, pin);
         _pRgb->Begin();
         Serial.println("RGB");
       break;
 
       case NeoPixelType_Grb:
-        _pGrb = new NeoPixelBus<NeoGrbFeature,NeoEsp8266Uart1800KbpsMethod>(countPixels, pin);
+        _pGrb = new NeoPixelBus<NeoGrbFeature,NP_METHOD>(countPixels, pin);
         _pGrb->Begin();
         Serial.println("GRB");
       break;
 
       case NeoPixelType_Rbg:
-        _pRbg = new NeoPixelBus<NeoRbgFeature,NeoEsp8266Uart1800KbpsMethod>(countPixels, pin);
+        _pRbg = new NeoPixelBus<NeoRbgFeature,NP_METHOD>(countPixels, pin);
         _pRbg->Begin();
+        Serial.println("RBG");
       break;
 
       case NeoPixelType_Rgbw:
-        _pRgbw = new NeoPixelBus<NeoRgbwFeature,NeoEsp8266Uart1800KbpsMethod>(countPixels, pin);
+        _pRgbw = new NeoPixelBus<NeoRgbwFeature,NP_METHOD>(countPixels, pin);
         _pRgbw->Begin();
+        Serial.println("RGBW");
       break;
 
       case NeoPixelType_Grbw:
-        _pGrbw = new NeoPixelBus<NeoGrbwFeature,NeoEsp8266Uart1800KbpsMethod>(countPixels, pin);
+        _pGrbw = new NeoPixelBus<NeoGrbwFeature,NP_METHOD>(countPixels, pin);
         _pGrbw->Begin();
+        Serial.println("GRBW");
       break;
     }
   }
@@ -77,45 +89,18 @@ public:
       case NeoPixelType_Grbw: _pGrbw->Show();  break;
     }
   }
+
   bool CanShow() const
   {
     switch (_type) {
-      case NeoPixelType_Rgb:  _pRgb->CanShow();  break;
-      case NeoPixelType_Grb:  _pGrb->CanShow();  break;
-      case NeoPixelType_Rbg:  _pRbg->CanShow();  break;
-      case NeoPixelType_Rgbw: _pRgbw->CanShow(); break;
-      case NeoPixelType_Grbw: _pGrbw->CanShow(); break;
+      case NeoPixelType_Rgb:  return _pRgb->CanShow();  
+      case NeoPixelType_Grb:  return _pGrb->CanShow(); 
+      case NeoPixelType_Rbg:  return _pRbg->CanShow();
+      case NeoPixelType_Rgbw: return _pRgbw->CanShow();
+      case NeoPixelType_Grbw: return _pGrbw->CanShow();
+      default: return false;
     }
   }
-
-  // replicate all the calls like the above
-    bool IsDirty() const
-    {
-    }
-
-    void Dirty()
-    {
-    }
-
-    void ResetDirty()
-    {
-    }
-
-    uint8_t* Pixels() const
-    {
-    }
-
-    size_t PixelsSize() const
-    {
-    }
-
-    size_t PixelSize() const
-    {
-    }
-
-    uint16_t PixelCount() const
-    {
-    }
 
     void SetPixelColor(uint16_t indexPixel, RgbColor color)
     {
@@ -195,11 +180,11 @@ private:
   NeoPixelType _type;
 
   // have a member for every possible type
-  NeoPixelBus<NeoRgbFeature,NeoEsp8266Uart1800KbpsMethod>*  _pRgb;
-  NeoPixelBus<NeoGrbFeature,NeoEsp8266Uart1800KbpsMethod>*  _pGrb;
-  NeoPixelBus<NeoRbgFeature,NeoEsp8266Uart1800KbpsMethod>*  _pRbg;
-  NeoPixelBus<NeoRgbwFeature,NeoEsp8266Uart1800KbpsMethod>* _pRgbw;
-  NeoPixelBus<NeoGrbwFeature,NeoEsp8266Uart1800KbpsMethod>* _pGrbw;
+  NeoPixelBus<NeoRgbFeature,NP_METHOD>*  _pRgb;
+  NeoPixelBus<NeoGrbFeature,NP_METHOD>*  _pGrb;
+  NeoPixelBus<NeoRbgFeature,NP_METHOD>*  _pRbg;
+  NeoPixelBus<NeoRgbwFeature,NP_METHOD>* _pRgbw;
+  NeoPixelBus<NeoGrbwFeature,NP_METHOD>* _pGrbw;
 
   void cleanup()
   {

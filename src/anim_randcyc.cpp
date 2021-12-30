@@ -9,7 +9,7 @@ void Anim::animRandCyc_SetUp() {
 
 void Anim::animRandCyc_Run() {
     for (int i=0;i<ledsNum;i++) {
-        leds[i] = palette->getPalColor((float)seq[i] / 256);
+        leds[i] = palette->getPalColorCycle((float)seq[i] / 256);
         seq[i]+=rngb() >> 6;
     }
 }

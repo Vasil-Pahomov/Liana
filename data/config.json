@@ -1,5 +1,13 @@
 {
 	"leds":"100",
 	"brightness": "100",
-	"neofeature": "0"
+	"neofeature": "0",
+	"disabledAnims" : "0",
+	"disableddPals" : "0",
+	"mqttHost": "",
+	"mqttPort": "",
+	"mqttClientId": "",
+	"mqttLogin": "",
+	"mqttPass": "",
+	"mqttTopic": ""
 }
