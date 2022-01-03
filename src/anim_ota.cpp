@@ -13,8 +13,8 @@ void Anim::animOTA_SetUp() {
 void Anim::animOTA_Run() {
     int countLed = ledsNum * otaProgress / 100;
         int BRIGHTNESS = currentConfig.brightness;
-    int startIndex = countLed - 3;
-    if (startIndex<0){
+    int startIndex = countLed - 2;
+    if (startIndex < 0){
         startIndex = 0;
     }
     for(int i=startIndex; i<countLed; i++) {
@@ -22,7 +22,7 @@ void Anim::animOTA_Run() {
         leds[i].g = BRIGHTNESS;
         leds[i].b = 0;
     }
-    for(int i=0; i<ledsNum; i++) {
-        leds[i].fade(1);
+    for(int i=0; i<startIndex; i++) {
+        leds[i].fade(20);
     }
 }
