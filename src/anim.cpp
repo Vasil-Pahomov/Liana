@@ -108,7 +108,7 @@ void Anim::doSetUp()
     strip = new NeoPixelWrapper();
     
     ledsNum = currentConfig.leds;
-    strip->Begin(currentConfig.neofeature, ledsNum, 2);
+    strip->Begin(currentConfig.neofeature, ledsNum, LED_PIN);
     initialized = true;
   }
   if (!setUpOnPalChange) {
@@ -168,10 +168,15 @@ void Anim::setAnim(byte animInd)
             setUpImpl = &Anim::animStatic_SetUp;
             runImpl = &Anim::animStatic_Run;
             setUpOnPalChange = false;
-        break;                                
+        break;
         case 100://special "magic" animation
             setUpImpl = &Anim::animMagic_SetUp;
             runImpl = &Anim::animMagic_Run;
+            setUpOnPalChange = false;
+        break;
+        case ANIMATION_OTA_INDEX:// OTA
+            setUpImpl = &Anim::animOTA_SetUp;
+            runImpl = &Anim::animOTA_Run;
             setUpOnPalChange = false;
         break;
         default:

@@ -25,7 +25,7 @@
 #include "websocket.h"
 #include "wifi.h"
 #include "mqtt.h"
-
+#include "ota.h"
 
 
 void tests_runAll();
@@ -58,6 +58,7 @@ void setup() {
   anim.setPalette(paletteInd);
   anim.doSetUp();
 
+  otaSetUp();
   Serial.println("Setup done");
 }
 
@@ -134,7 +135,7 @@ void loop() {
 
   wifiLoop();
   mqttRun();
-
+  otaLoop();
 }
 
 unsigned int rng() {
