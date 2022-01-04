@@ -17,7 +17,8 @@ enum NeoPixelType
   NeoPixelType_Grb  = 1,
   NeoPixelType_Rbg  = 2,
   NeoPixelType_Rgbw = 3,
-  NeoPixelType_Grbw = 4
+  NeoPixelType_Grbw = 4,
+  NeoPixelType_Brg = 5
 };
 
 class NeoPixelWrapper
@@ -27,6 +28,7 @@ public:
       // initialize each member to null
       _type(NeoPixelType_Rgb),
       _pRgb(NULL),
+      _pBrg(NULL),
       _pGrb(NULL),
       _pRbg(NULL),
       _pRgbw(NULL),
@@ -51,6 +53,12 @@ public:
         _pRgb = new NeoPixelBus<NeoRgbFeature,NP_METHOD>(countPixels, pin);
         _pRgb->Begin();
         Serial.println("RGB");
+      break;
+
+      case NeoPixelType_Brg:
+        _pBrg = new NeoPixelBus<NeoBrgFeature,NP_METHOD>(countPixels, pin);
+        _pBrg->Begin();
+        Serial.println("BRG");
       break;
 
       case NeoPixelType_Grb:
@@ -83,6 +91,7 @@ public:
   {
     switch (_type) {
       case NeoPixelType_Rgb:  _pRgb->Show();   break;
+      case NeoPixelType_Brg:  _pBrg->Show();   break;
       case NeoPixelType_Grb:  _pGrb->Show();   break;
       case NeoPixelType_Rbg:  _pRbg->Show();   break;
       case NeoPixelType_Rgbw: _pRgbw->Show();  break;
@@ -93,8 +102,9 @@ public:
   bool CanShow() const
   {
     switch (_type) {
-      case NeoPixelType_Rgb:  return _pRgb->CanShow();  
-      case NeoPixelType_Grb:  return _pGrb->CanShow(); 
+      case NeoPixelType_Rgb:  return _pRgb->CanShow();
+      case NeoPixelType_Brg:  return _pBrg->CanShow();
+      case NeoPixelType_Grb:  return _pGrb->CanShow();
       case NeoPixelType_Rbg:  return _pRbg->CanShow();
       case NeoPixelType_Rgbw: return _pRgbw->CanShow();
       case NeoPixelType_Grbw: return _pGrbw->CanShow();
@@ -106,6 +116,7 @@ public:
     {
       switch (_type) {
         case NeoPixelType_Rgb: _pRgb->SetPixelColor(indexPixel, color);   break;
+        case NeoPixelType_Brg: _pBrg->SetPixelColor(indexPixel, color);   break;
         case NeoPixelType_Grb: _pGrb->SetPixelColor(indexPixel, color);   break;
         case NeoPixelType_Rbg: _pRbg->SetPixelColor(indexPixel, color);   break;
         case NeoPixelType_Rgbw:_pRgbw->SetPixelColor(indexPixel, color);  break;
@@ -181,6 +192,7 @@ private:
 
   // have a member for every possible type
   NeoPixelBus<NeoRgbFeature,NP_METHOD>*  _pRgb;
+  NeoPixelBus<NeoBrgFeature,NP_METHOD>*  _pBrg;
   NeoPixelBus<NeoGrbFeature,NP_METHOD>*  _pGrb;
   NeoPixelBus<NeoRbgFeature,NP_METHOD>*  _pRbg;
   NeoPixelBus<NeoRgbwFeature,NP_METHOD>* _pRgbw;
@@ -190,6 +202,7 @@ private:
   {
     switch (_type) {
       case NeoPixelType_Rgb:  delete _pRgb ; _pRgb  = NULL; break;
+      case NeoPixelType_Brg:  delete _pBrg ; _pBrg  = NULL; break;
       case NeoPixelType_Grb:  delete _pGrb ; _pGrb  = NULL; break;
       case NeoPixelType_Rbg:  delete _pRbg ; _pRbg  = NULL; break;
       case NeoPixelType_Rgbw: delete _pRgbw; _pRgbw = NULL; break;
