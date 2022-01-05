@@ -9,6 +9,7 @@ WebServer webServer(80);
 #endif
 #include <EspHtmlTemplateProcessor.h>
 #include "config.h"
+#include "ota.h"
 
 EspHtmlTemplateProcessor templateProcessor(&webServer);
 
@@ -94,6 +95,13 @@ void webRedirectHomeWithRestartMessage() {
   webServer.send(302, "text/html", "<script>window.location='/?restartmsg=block'</script>Not found. <a href='/'>Home</a>");
 }
 
+void webOnOTA(){
+  otaBegin();
+  // webServer.sendHeader("Cache-Control", " max-age=172800");
+  webServer.send(200, "text/html", "OTA is beginning <a href='/'>Home</a>");
+  // webRedirectHomeWithRestartMessage();
+}
+
 void webOnSetup() {
   int leds = webServer.arg("leds").toInt();
   int brightness = webServer.arg("brightness").toInt();
@@ -121,7 +129,7 @@ void webOnMqttSettings() {
 
 void webSetup() {
   Serial.println("WebServer is setuping");
-    webServer.onNotFound([&]() {
+  webServer.onNotFound([&]() {
       Serial.println("NF: " + webServer.uri());
       if (!webFileRead(webServer.uri())) {
         webServer.sendHeader("Cache-Control", " max-age=172800");
@@ -132,6 +140,7 @@ void webSetup() {
   //todo: it's not clear you should add the handler for each settings page here, think of it
   webServer.on("/setup", HTTP_POST, webOnSetup);
   webServer.on("/mqtt", HTTP_POST, webOnMqttSettings);
+  webServer.on("/ota", HTTP_POST, webOnOTA);
 
   webServer.begin();
   Serial.println("WebServer setuped");

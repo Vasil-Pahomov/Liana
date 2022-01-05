@@ -2,6 +2,14 @@
 #define anim_h
 #include "palette.h"
 
+#if defined(ESP8266)
+#define LED_PIN 2
+#elif defined(ESP32)
+#define LED_PIN 14
+#else
+#error "Unsupported board class"
+#endif
+
 #define ANIMS 9 //number of animations to cycle randomly
 #define PALS 10 //number of palettes
 #define INTERVAL 30000 //change interval, msec
@@ -9,6 +17,8 @@
 #define MAXLEDS 1024 // maximum number of LEDs in the strip TODO: switch to dynamic arrays to save RAM
 
 #define TRANSITION_MS 1000 // transition time between animations, ms
+
+#define ANIMATION_OTA_INDEX 101
 
 // brigthness animation amplitude shift. true BrA amplitude is calculated as (0..127) value shifted right by this amount
 #define BRA_AMP_SHIFT 1
@@ -130,6 +140,9 @@ private:
 
     void animMagic_SetUp();
     void animMagic_Run();
+
+    void animOTA_SetUp();
+    void animOTA_Run();
 public:
 
 
