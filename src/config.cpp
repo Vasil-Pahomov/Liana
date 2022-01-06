@@ -8,8 +8,9 @@ LianaConfig currentConfig;
 void LianaConfig::configLoad() {
   File file = SPIFFS.open(CONFIG_FILE_NAME, "r");
   Serial.println("Config is loading");
-  if (deserializeJson(configJsonDoc, file)) {
-    Serial.println("Config read error");
+  DeserializationError error = deserializeJson(configJsonDoc, file);
+  if (error) {
+    Serial.print("Config read error:");Serial.println(error.f_str());
   } else {
     Serial.println("Config loaded");
   }
