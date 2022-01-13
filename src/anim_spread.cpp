@@ -10,11 +10,15 @@ void Anim::animSpread_SetUp() {
 }
 
 void Anim::animSpread_Run() {
-    memset(leds, 0, 3*ledsNum);
+    for (int i=0;i<ledsNum;i++) {
+        leds[i].r = 0;
+        leds[i].g = 0;
+        leds[i].b = 0;
+    }
 
     for (int i=0;i<ledsNum;i++) {
         if (seq[i] > 0) {
-            byte width = phase - seq[i];
+            int width = phase - seq[i];
             for (int j=i-width;j<=(i+width);j++) {
                 Color c = ledstmp[i];
                 if (j>=0 && j<ledsNum) {
@@ -29,7 +33,7 @@ void Anim::animSpread_Run() {
     }
 
     if (random(inc) == 0) {
-        byte pos = random(0,ledsNum); 
+        int pos = random(0,ledsNum); 
         ledstmp[pos] = palette->getPalColor((float)rngb()/256);
         seq[pos] = phase;
     }        

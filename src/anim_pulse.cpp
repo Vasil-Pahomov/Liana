@@ -166,7 +166,7 @@ void Anim::animPulse_Run() {
     }
 
     if (random(inc) == 0) {
-        byte pos = PULSE_WIDTH + random(ledsNum-2*PULSE_WIDTH);
+        int pos = PULSE_WIDTH + random(ledsNum-2*PULSE_WIDTH);
         if (seq[pos] == PULSE_LENGTH) {
             seq[pos] = 0;
             ledstmp[pos] = palette->getPalColor((float)rngb()/256);

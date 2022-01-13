@@ -76,7 +76,7 @@ private:
 
     Color sparkleColor = Color(0xFFFFFF);
 
-    static byte seq[MAXLEDS];
+    static int seq[MAXLEDS];
 
     //brigthness animation (BrA) current initial phase
     byte braPhase;

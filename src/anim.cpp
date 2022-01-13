@@ -224,4 +224,4 @@ void setDuration(unsigned long durationMs) {
 Color Anim::leds1[MAXLEDS];
 Color Anim::leds2[MAXLEDS];
 Color Anim::ledstmp[MAXLEDS];
-byte Anim::seq[MAXLEDS];
+int Anim::seq[MAXLEDS];

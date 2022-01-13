@@ -1,18 +1,18 @@
 #include "anim.h"
 
-void AnimSparkr_initSeq(byte * seq, int ledsNum)
+void AnimSparkr_initSeq(int * seq, int ledsNum)
 {
     for (int i=0; i<ledsNum; i++) {
         seq[i] = i;
     }
 }
 
-void AnimSparkr_shuffleSeq(byte * seq, int ledsNum) 
+void AnimSparkr_shuffleSeq(int * seq, int ledsNum) 
 {
     for (int i=0; i<ledsNum; i++) {
-        byte ind = (unsigned int) ( rngb() * ledsNum / 256);
+        int ind = (unsigned int) ( rngb() * ledsNum / 256);
         if (ind != i) {
-            byte tmp = seq[ind];
+            int tmp = seq[ind];
             seq[ind] = seq[i];
             seq[i] = tmp;
         }
@@ -34,7 +34,7 @@ void Anim::animSparkr_SetUp() {
 
 void Anim::animSparkr_Run() {
     for (int i=0;i<ledsNum;i++) {
-        byte pos = seq[i];
+        int pos = seq[i];
 
         leds[pos] = (i > phase)
             ? prevColor 

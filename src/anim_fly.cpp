@@ -17,7 +17,7 @@ void Anim::animFly_SetUp() {
 
 void Anim::animFly_Run() {
     
-    byte launchpos;
+    int launchpos;
     if (inc > 0) {
         launchpos = ledsNum-1;
         for (int i=1;i<ledsNum;i++) {
