@@ -1,11 +1,12 @@
 # Проект Liana: световая анимация на ESP8266/WS2812 
 ## Как быстро запустить
 1. Подключите плату ESP, светодиодную ленту (гирлянду) и источник питания как показано ниже (подключение)
-1. Загрузите в ESP файлы: [основную прошивку](https://github.com/Vasil-Pahomov/Liana/raw/master/bin/firmware.bin) по адресу 0x000000 и [файловую систему](https://github.com/Vasil-Pahomov/Liana/raw/master/bin/spiffs.bin) по адресу 0x100000. Нужно соответствующим образом выставить настройки: номер COM-порта, размер flash-памяти, режим SPI. Я использовал официальный инструмент Flash download tools (скачать можно [здесь](https://www.espressif.com/en/support/download/other-tools)), и работающие настройки для платы NodeMCU выглядили так:
+2. Загрузите в ESP файлы: [основную прошивку](https://github.com/Vasil-Pahomov/Liana/raw/master/bin/firmware.bin) по адресу 0x000000 и [файловую систему](https://github.com/Vasil-Pahomov/Liana/raw/master/bin/spiffs.bin) по адресу 0x100000. Нужно соответствующим образом выставить настройки: номер COM-порта, размер flash-памяти, режим SPI. Я использовал официальный инструмент Flash download tools (скачать можно [здесь](https://www.espressif.com/en/support/download/other-tools)), и работающие настройки для платы NodeMCU выглядили так:
+
 ![Настройки Flash download tools для NodeMCU](https://raw.githubusercontent.com/Vasil-Pahomov/Liana/master/pics/Download_tool_settings.png)
 
-1. После запуска подключитесь к беспроводной сети под названием "Liana" и нажмите на всплывающую панель с требованием авторизации - откроется web-интерфейс Liana. Если панель не появляется, перейдите по адресу http://192.168.4.1/ в браузере. В интерфейсе можно подключиться к домашней сети WiFi.
-1. После подключения Liana к сети WiFi, откройте "http://liana.local" в браузере на устройстве с iOS, MacOS or Windows, находящимися в той же сети. 
+3. После запуска подключитесь к беспроводной сети под названием "Liana" и нажмите на всплывающую панель с требованием авторизации - откроется web-интерфейс Liana. Если панель не появляется, перейдите по адресу http://192.168.4.1/ в браузере. В интерфейсе можно подключиться к домашней сети WiFi.
+4. После подключения Liana к сети WiFi, откройте "http://liana.local" в браузере на устройстве с iOS, MacOS or Windows, находящимися в той же сети. 
 К большому сожалению, это не работает для Android - нужно знать IP-адрес Liana (в админской консоли роутера, посмотрев вывод Liana в COM-порт после старта, либо используя клиент mDNS вроде https://play.google.com/store/apps/details?id=com.dokoden.dotlocalfinder). Потом подключайтесь браузером к "http://<IP_ADDRESS>".
 
 ## Подключение
