@@ -1,12 +1,13 @@
 # Проект Liana: световая анимация на ESP8266/WS2812 
 ## Как быстро запустить
-1. Подключите плату ESP, светодиодную ленту (гирлянду) и источник питания как показано ниже (подключение)
+1. Подключите плату ESP, светодиодную ленту (гирлянду) и источник питания как показано ниже [(подключение)](https://github.com/Vasil-Pahomov/Liana/edit/master/readme.MD#%D0%BF%D0%BE%D0%B4%D0%BA%D0%BB%D1%8E%D1%87%D0%B5%D0%BD%D0%B8%D0%B5)
 1. Загрузите в ESP файлы: [основную прошивку](https://github.com/Vasil-Pahomov/Liana/raw/master/bin/firmware.bin) по адресу 0x000000 и [файловую систему](https://github.com/Vasil-Pahomov/Liana/raw/master/bin/spiffs.bin) по адресу 0x100000. Нужно соответствующим образом выставить настройки: номер COM-порта, размер flash-памяти, режим SPI. Я использовал официальный инструмент Flash download tools (скачать можно [здесь](https://www.espressif.com/en/support/download/other-tools)), и работающие настройки для платы NodeMCU выглядили так:
+
 ![Настройки Flash download tools для NodeMCU](https://raw.githubusercontent.com/Vasil-Pahomov/Liana/master/pics/Download_tool_settings.png)
 
-1. После запуска подключитесь к беспроводной сети под названием "Liana" и нажмите на всплывающую панель с требованием авторизации - откроется web-интерфейс Liana. Если панель не появляется, перейдите по адресу http://192.168.4.1/ в браузере. В интерфейсе можно подключиться к домашней сети WiFi.
-1. После подключения Liana к сети WiFi, откройте "http://liana.local" в браузере на устройстве с iOS, MacOS or Windows, находящимися в той же сети. 
-К большому сожалению, это не работает для Android - нужно знать IP-адрес Liana (в админской консоли роутера, посмотрев вывод Liana в COM-порт после старта, либо используя клиент mDNS вроде https://play.google.com/store/apps/details?id=com.dokoden.dotlocalfinder). Потом подключайтесь браузером к "http://<IP_ADDRESS>".
+3. После запуска подключитесь к беспроводной сети под названием "Liana" и нажмите на всплывающую панель с требованием авторизации - откроется web-интерфейс Liana. Если панель не появляется, перейдите по адресу http://192.168.4.1/ в браузере. В интерфейсе можно подключиться к домашней сети WiFi.
+4. После подключения Liana к сети WiFi, откройте "http://liana.local" в браузере на устройстве с iOS, MacOS or Windows, находящимися в той же сети. 
+К большому сожалению, это не работает для Android - нужно знать IP-адрес Liana (в админской консоли роутера, посмотрев вывод Liana в COM-порт после старта, либо используя клиент mDNS вроде [.Local Finder](https://play.google.com/store/apps/details?id=com.dokoden.dotlocalfinder). Потом подключайтесь браузером к "http://<IP_ADDRESS>".
 
 ## Подключение
 ![Wiring diagram](https://raw.githubusercontent.com/Vasil-Pahomov/Liana/master/pics/Diagram.png)
@@ -19,11 +20,11 @@
 Модулю ESP обычно хватает 500 мА, каждый светодиод WS2812 может кушать до 60 мА.
 
 ## Как собрать
-1. Сейчас проект собран для PlatformIO (https://platformio.org/) и Visual Studio Code (https://code.visualstudio.com/)
-1. Настройки PlatformIO и Visual Studio code хорошо описаны, например, здесь: https://docs.platformio.org/en/latest/integration/ide/vscode.html
+1. Сейчас проект собран для [PlatformIO](https://platformio.org/) и [Visual Studio Code](https://code.visualstudio.com/).
+1. Настройки PlatformIO и Visual Studio code хорошо описаны, например, [здесь](https://docs.platformio.org/en/latest/integration/ide/vscode.html).
 1. Все зависимости прописаны в файле platformio.ini и загружаются автоматически.
-1. Не забудьте прописать параметры платы ESP в platformio.ini (как минимум номер COM-порта для загрузки)
-1. Не забудьте при прошивке также загрузить образ файловой системы (выполнить задачу "Upload Filesystem Image")
+1. Не забудьте прописать параметры платы ESP в platformio.ini (как минимум номер COM-порта для загрузки).
+1. Не забудьте при прошивке также загрузить образ файловой системы (выполнить задачу "Upload Filesystem Image").
 
 ## Управление модулем
 Сейчас после подачи питания модуль начинает проигрывать эффекты в случайном порядке со сменой каждые 30 секунд. В web-интерфейсе можно вручную переключать анимации и палитры, а также включать и выключать ленту.
@@ -48,28 +49,28 @@
 
 # Project Liana: ESP8266/WS2812 LIght ANimation
 ## How to start
-1. Connect your ESP, LED strip and power source as shown below (Wiring)
+1. Connect your ESP, LED strip and power source as shown below [(Wiring)](https://github.com/Vasil-Pahomov/Liana/edit/master/readme.MD#wiring)
 1. Upload binary files: [program file](https://github.com/Vasil-Pahomov/Liana/raw/master/bin/firmware.bin) at 0x000000, and [SPIFFS file](https://github.com/Vasil-Pahomov/Liana/raw/master/bin/spiffs.bin) at 0x100000. You should adjust settings for your board, particuarly COM port number, flash size, and SPI mode. I used official Flash download tools (can be found [here](https://www.espressif.com/en/support/download/other-tools)), and my working settings for NodeMCU board looked like this:
 
 ![Flash download tools settings](https://raw.githubusercontent.com/Vasil-Pahomov/Liana/master/pics/Download_tool_settings.png)
 
-1. Connect to "Liana" wireless network and tap on pop-up authorization panel. You'll be brought directly to the Liana web interface. If the panel didn't open, go to http://192.168.4.1/ in the browser. You can configure connection to your WiFi network there.
-1. Once you have connected Liana to your WiFi, open "http://liana.local" in web browser of any iOS, MacOS or Windows device on the same network. This does not work for Android however, you should find IP address of the Liana (e.g. in your router admin console, seeing Liana COM port output after startup, or using mDNS client like https://play.google.com/store/apps/details?id=com.dokoden.dotlocalfinder). Then type "http://<IP_ADDRESS>" in Android browser.
+3. Connect to "Liana" wireless network and tap on pop-up authorization panel. You'll be brought directly to the Liana web interface. If the panel didn't open, go to http://192.168.4.1/ in the browser. You can configure connection to your WiFi network there.
+4. Once you have connected Liana to your WiFi, open "http://liana.local" in web browser of any iOS, MacOS or Windows device on the same network. This does not work for Android however, you should find IP address of the Liana (e.g. in your router admin console, seeing Liana COM port output after startup, or using mDNS client like [.Local Finder](https://play.google.com/store/apps/details?id=com.dokoden.dotlocalfinder). Then type "http://<IP_ADDRESS>" in Android browser.
 
 ## Wiring
 ![Wiring diagram](https://raw.githubusercontent.com/Vasil-Pahomov/Liana/master/pics/Diagram.png)
 
 Here example of NodeMCU is shown, but you can use any ESP8266 board. But note you may have to recompile the code! 
-You power the board, power the WS2812 chain, and connect GPIO2 output of ESP to the data input of the firsh WS2812 in chain, that's all.
+You power the board, power the WS2812 chain, and connect GPIO2 output of ESP to the data input of the first WS2812 in chain, that's all.
 Be sure you use appropriate power source; most of ESP8266 board have voltage stabilizer but "raw" ESP8266 require 3.3V while WS2812 strips require 5V or 12V. You can use different power sources for ESP and the strip, you connect grounds then. Also, be sure that there's enough power for your LEDs and ESP; too weak power source can cause unintended side effects like random rebooting, wrong coloring etc.
 500 mA is typically enough for ESP board. Each WS2812 LED eats up to 60 mA.
 
 ## How to compile 
-1. Currently the project is built with PlatformIO (https://platformio.org/) and Visual Studio Code (https://code.visualstudio.com/)
-1. Setting up PlatformIO and Visual Studio Code is described here: https://docs.platformio.org/en/latest/integration/ide/vscode.html
+1. Currently the project is built with [PlatformIO](https://platformio.org/) and [Visual Studio Code](https://code.visualstudio.com/).
+1. Setting up PlatformIO and Visual Studio Code is described [here](https://docs.platformio.org/en/latest/integration/ide/vscode.html).
 1. All library dependencies are enumerated in platformio.ini file and should be downloaded automatically.
-1. Be sure to set up your board settings in platformio.ini file (at least COM port for downloading)
-1. Don't forget to upload SPIFFS image (Run task "Upload Filesystem Image")
+1. Be sure to set up your board settings in platformio.ini file (at least COM port for downloading).
+1. Don't forget to upload SPIFFS image (Run task "Upload Filesystem Image").
 
 ## Controlling the unit
 Currently, when unit is powered on, it starts to play animations in random order, changing every 30 seconds. With web browser, you can control animations and palettes manually. Also you can switch the strip on and off.
