@@ -18,7 +18,7 @@ int animInd = 0;
 //TODO: do something with this, it's bad thing to reference that var here
 extern unsigned long ms;
 
-Palette * pals[PALS] = {&PalRgb, &PalRainbow, &PalRainbowStripe, &PalParty, &PalHeat, &PalFire, &PalIceBlue, &PalXMas, &PalNY, &PalBLR};
+Palette * pals[PALS] = {&PalRgb, &PalRainbow, &PalRainbowStripe, &PalParty, &PalHeat, &PalFire, &PalIceBlue, &PalXMas, &PalNY, &PalBLR, &PalUA};
 
 Anim::Anim() 
 {
