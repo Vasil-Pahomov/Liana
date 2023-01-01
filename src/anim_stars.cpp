@@ -12,7 +12,9 @@ void Anim::animStars_SetUp() {
     if (inc < 0) inc=0;
 
     //reset all phases
-    memset(seq, 255, ledsNum); 
+    for (int i=0;i<ledsNum;i++) {
+        seq[i] = 255;
+    }
 }
 
 void Anim::animStars_Run() {   
