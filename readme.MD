@@ -1,7 +1,7 @@
 # Проект Liana: световая анимация на ESP8266/WS2812 
 ## Как быстро запустить
 1. Подключите плату ESP, светодиодную ленту (гирлянду) и источник питания как показано ниже (подключение)
-1. Загрузите в ESP файлы: [основную прошивку](https://github.com/Vasil-Pahomov/Liana/raw/master/bin/firmware.bin) по адресу 0x000000 и [файловую систему](https://github.com/Vasil-Pahomov/Liana/raw/master/bin/spiffs.bin) по адресу 0x100000. Нужно соответствующим образом выставить настройки: номер COM-порта, размер flash-памяти, режим SPI. Я использовал официальный инструмент Flash download tools (скачать можно [здесь](https://www.espressif.com/en/support/download/other-tools)), и работающие настройки для платы NodeMCU выглядили так:
+1. Загрузите в ESP файлы: [основную прошивку](https://github.com/Vasil-Pahomov/Liana/releases/latest/download/firmware.bin) по адресу 0x000000 и [файловую систему](https://github.com/Vasil-Pahomov/Liana/releases/latest/download/spiffs.bin) по адресу 0x100000. Нужно соответствующим образом выставить настройки: номер COM-порта, размер flash-памяти, режим SPI. Я использовал официальный инструмент Flash download tools (скачать можно [здесь](https://www.espressif.com/en/support/download/other-tools)), и работающие настройки для платы NodeMCU выглядили так:
 ![Настройки Flash download tools для NodeMCU](https://raw.githubusercontent.com/Vasil-Pahomov/Liana/master/pics/Download_tool_settings.png)
 
 1. После запуска подключитесь к беспроводной сети под названием "Liana" и нажмите на всплывающую панель с требованием авторизации - откроется web-интерфейс Liana. Если панель не появляется, перейдите по адресу http://192.168.4.1/ в браузере. В интерфейсе можно подключиться к домашней сети WiFi.
@@ -49,7 +49,7 @@
 # Project Liana: ESP8266/WS2812 LIght ANimation
 ## How to start
 1. Connect your ESP, LED strip and power source as shown below (Wiring)
-1. Upload binary files: [program file](https://github.com/Vasil-Pahomov/Liana/raw/master/bin/firmware.bin) at 0x000000, and [SPIFFS file](https://github.com/Vasil-Pahomov/Liana/raw/master/bin/spiffs.bin) at 0x100000. You should adjust settings for your board, particuarly COM port number, flash size, and SPI mode. I used official Flash download tools (can be found [here](https://www.espressif.com/en/support/download/other-tools)), and my working settings for NodeMCU board looked like this:
+1. Upload binary files: [program file](https://github.com/Vasil-Pahomov/Liana/releases/latest/download/firmware.bin) at 0x000000, and [SPIFFS file](https://github.com/Vasil-Pahomov/Liana/releases/latest/download/spiffs.bin) at 0x100000. You should adjust settings for your board, particuarly COM port number, flash size, and SPI mode. I used official Flash download tools (can be found [here](https://www.espressif.com/en/support/download/other-tools)), and my working settings for NodeMCU board looked like this:
 
 ![Flash download tools settings](https://raw.githubusercontent.com/Vasil-Pahomov/Liana/master/pics/Download_tool_settings.png)
 
