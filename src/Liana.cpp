@@ -26,6 +26,8 @@
 #include "wifi.h"
 #include "mqtt.h"
 #include "ota.h"
+#include "hw_button.h"
+#include "hw_led.h"
 
 
 void tests_runAll();
@@ -59,6 +61,14 @@ void setup() {
   anim.doSetUp();
 
   otaSetUp();
+  
+  #if defined(SUPPORT_LED_ON_OFF)
+  ledSetUp();
+  #endif
+
+  #if defined(SUPPORT_BUTTON)
+  buttonsSetUp();
+  #endif
   Serial.println("Setup done");
 }
 
@@ -136,6 +146,9 @@ void loop() {
   wifiLoop();
   mqttRun();
   otaLoop();
+  #if defined(SUPPORT_BUTTON)
+  buttonsLoop();
+  #endif
 }
 
 unsigned int rng() {

@@ -6,6 +6,7 @@
 #include "config.h"
 #include "NeoPixelWrapper.cpp"
 #include "math.h"
+#include "hw_led.h"
 
 NeoPixelWrapper * strip;
 
@@ -13,7 +14,7 @@ Anim anim = Anim();
 
 //TODO: hide inside the class, don't expose
 int paletteInd = 0;
-int animInd = 0;
+int animInd = POWERON_ANIMATION_ID;
 
 //TODO: do something with this, it's bad thing to reference that var here
 extern unsigned long ms;
@@ -118,6 +119,7 @@ void Anim::doSetUp()
 
 void Anim::setAnim(byte animInd)
 {
+    ledTurnOn();
     switch (animInd) {
         case 0:
             setUpImpl = &Anim::animStart_SetUp;
@@ -183,6 +185,7 @@ void Anim::setAnim(byte animInd)
             setUpImpl = &Anim::animOff_SetUp;
             runImpl = &Anim::animOff_Run;
             setUpOnPalChange = false;
+            ledTurnOff();
         break;
     }
 }
