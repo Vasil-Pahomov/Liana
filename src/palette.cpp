@@ -69,6 +69,13 @@ Color PalBLR_[] =
 };
 Palette PalBLR = { 3, PalBLR_};
 
+Color PalUA_[] = 
+{
+    0xffc000, 0x4040ff
+};
+Palette PalUA = { 2, PalUA_};
+
+
 // palettes below are taken from http://www.color-hex.com/color-palettes/ (and modified)
 
 Color PalIceBlue_[] = 

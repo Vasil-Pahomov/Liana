@@ -13,10 +13,8 @@
 
 #include "web.h"
 #include "websocket.h"
+#include "config.h"
 
-#define WIFI_AP_SSID "Liana"
-#define WIFI_CONNECTION_TIMEOUT 10000  //Timeout (in milliseconds) of waiting for WiFi connection
-#define MDNS_NAME "liana"
 
 DNSServer dnsServer;
 PersWiFiManager persWM(webServer, dnsServer);

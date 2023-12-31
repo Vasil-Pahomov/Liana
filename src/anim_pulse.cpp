@@ -4,18 +4,12 @@
 #include "math.h"
 
 #define PULSE_LENGTH 100
-#define PULSE_WIDTH 10
-#define PULSE_DOT_WIDTH 7
+#define PULSE_WIDTH 1
+#define PULSE_DOT_WIDTH 1
 
 const int PULSE_DOT[PULSE_DOT_WIDTH+2] = {
   0,
-  63,
-  127,
-  191,
   255,
-  191,
-  127,
-  63,
   0
 };
 
@@ -127,12 +121,15 @@ const int PULSE_DATA[PULSE_LENGTH] = {
 void Anim::animPulse_SetUp() {
     Serial.print(F("(pulse)"));
     //inc is (average) interval between appearance of new pulses
-    inc = random (10, 20);
+    inc = 10 - ledsNum / 20;
+    if (inc < 0) inc=0;
 
     //reset all phases
-    memset(seq, PULSE_LENGTH, ledsNum); 
-    //seq[4] = 0;
-    //ledstmp[4] = Color(255,255,255);
+    for (int i=0; i<ledsNum; i++) {
+      seq[i] = PULSE_LENGTH;
+    }
+    //seq[100] = 0;
+    //ledstmp[100] = Color(255,255,255);
 }
 
 void Anim::animPulse_Run() {
@@ -144,23 +141,21 @@ void Anim::animPulse_Run() {
     
     for (int p0=0;p0<ledsNum;p0++) {
       if (seq[p0] < PULSE_LENGTH) {
-        int pd = PULSE_DATA[seq[p0]];
-        int p = p0 + floor(pd * PULSE_WIDTH / 256);
+        int pd = 255+PULSE_DATA[seq[p0]];
+        int p = p0 + floor(pd * PULSE_WIDTH / 256) - 1;
         int d = (pd * PULSE_WIDTH) % 256;
-        //Serial.printf("%d,%d,%d,%d, ", seq[p0], pd, p, d);
+        //Serial.printf("%3d,%3d,%3d,%3d ... ", seq[p0], pd, p, d);
         for (int j=0;j<PULSE_DOT_WIDTH+1;j++) {
           int b = p + j - PULSE_DOT_WIDTH / 2;
           if (b>=0 && b < ledsNum) {
-            int k1 = PULSE_DOT[j] * d * (PULSE_LENGTH - seq[p0]) / 255 / PULSE_LENGTH;
-            int k2 = PULSE_DOT[j+1] * (255-d) * (PULSE_LENGTH - seq[p0]) / 255 / PULSE_LENGTH;
-            Color col1 = ledstmp[p0].brightness(k1);
-            Color col2 = ledstmp[p0].brightness(k2);
-            Color colr = col1.interpolate(col2, 0.5);
+            Color col1 = ledstmp[p0].brightness(PULSE_DOT[j]);
+            Color col2 = ledstmp[p0].brightness(PULSE_DOT[j+1]);
+            Color colr = col1.interpolate(col2, (255-d)/255.0).brightness((PULSE_LENGTH - seq[p0]) * 255 / PULSE_LENGTH);
             leds[b].addSaturate(colr);
-            //Serial.printf("%d:%d(%d)-%d(%d)=(%d)   ", b, k1, col1.r, k2, col2.r, leds[b].r);
+            //Serial.printf("%3d:%3d+%3d=%3d   ", b, col1.r, col2.r, leds[b].r);
           }
         }
-        //Serial.printf("%d,%d,%d,%d,%d,%d,%\n",leds[2].r,leds[3].r,leds[4].r,leds[5].r,leds[6].r,leds[7].r,leds[8].r);
+        //Serial.printf("%4d%4d%4d%4d%4d%4d%4d\n",leds[97].r,leds[98].r,leds[99].r,leds[100].r,leds[101].r,leds[102].r,leds[103].r);
         seq[p0]++;
       }
     }
