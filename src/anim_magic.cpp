@@ -1,4 +1,3 @@
-#include <SoftwareSerial.h>
 #include "anim.h"
 #include "color.h"
 #include "palette.h"

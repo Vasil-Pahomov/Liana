@@ -134,6 +134,9 @@ public:
 
 extern Anim anim;
 
+//true if the index denotes an animation the user may select (regular, magic or off)
+bool isValidAnimIndex(int animIndex);
+
 void setAnimation(int animIndex);
 
 void setPalette(int paletteIndex);

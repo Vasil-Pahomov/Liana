@@ -12,6 +12,10 @@ int buttonOnOffState = 0;
 
 unsigned long lastTime = 0;
 
+#if defined(SUPPORT_BUTTON)
+static void _toggleOnOff();
+#endif
+
 void buttonsLoop()
 {
     #if defined(SUPPORT_BUTTON)
@@ -35,7 +39,8 @@ void buttonsLoop()
     #endif
 }
 
-void _toggleOnOff()
+#if defined(SUPPORT_BUTTON)
+static void _toggleOnOff()
 {
     if (animInd == ANIMATION_OFF_INDEX)
     { // OFF? -> on
@@ -49,6 +54,7 @@ void _toggleOnOff()
     }
     setAnimPal();
 }
+#endif
 
 void buttonsSetUp()
 {

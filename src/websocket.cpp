@@ -6,7 +6,7 @@
 WebSocketsServer webSocket(81); 
 
 //TODO: do something with this, it's bad thing to reference that var here
-extern unsigned long ms;
+extern unsigned long millisec;
 
 //notifies websocket connection num of current status
 //if num is -1, notifies all active connections
@@ -33,7 +33,7 @@ void wsNotify(int num) {
  * 4-5 char - HEX byte, color index (roll inclination of the device)
  */
 void wsPoint(uint8_t num, uint8_t * payload, size_t length) {
-  if (animInd == 100) {            
+  if (animInd == ANIMATION_MAGIC_INDEX && length >= 3) {
     uint32_t data = (uint32_t) strtol((const char *) &payload[2], NULL, 16);
     byte spotColor = (data >> 8) & 0xFF;
     anim.setMagicParams(num, data & 0xFF, spotColor, payload[1] == 'B');
@@ -47,10 +47,15 @@ void wsPoint(uint8_t num, uint8_t * payload, size_t length) {
  */
 void wsSet(uint8_t num, uint8_t * payload, size_t length) {
   uint32_t data = (uint32_t) strtol((const char *) &payload[1], NULL, 16);
-  animInd = (data >> 8) & 0xFF;
-  paletteInd = data & 0xFF;
-  if (paletteInd >= PALS) { paletteInd = 0; };
-  setAnimPal();  
+  int newAnimInd = (data >> 8) & 0xFF;
+  int newPaletteInd = data & 0xFF;
+  if (!isValidAnimIndex(newAnimInd) || newPaletteInd >= PALS) {
+    Serial.printf("WS set rejected: anim=%d, pal=%d\n", newAnimInd, newPaletteInd);
+    return;
+  }
+  animInd = newAnimInd;
+  paletteInd = newPaletteInd;
+  setAnimPal();
 }
 
 /* Info command
@@ -59,8 +64,8 @@ void wsSet(uint8_t num, uint8_t * payload, size_t length) {
  */
 void wsInfo(uint8_t num, uint8_t * payload, size_t length) {
   wsNotify(num);
-  if (animInd > 0) {
-    ms = millis() + INTERVAL; //"reset" duration for any animation except start
+  if (animInd != ANIMATION_START_INDEX) {
+    millisec = millis() + INTERVAL; //"reset" duration for any animation except start
   }
 }
 
@@ -70,8 +75,11 @@ void wsInfo(uint8_t num, uint8_t * payload, size_t length) {
  * 3+ char - decimal number of animation/palette to change state
  */
 void wsSetDisabled(uint8_t num, uint8_t * payload, size_t length) {
+  if (length < 4) return;
   bool isEnabling = payload[2] != 'D';
   int ind = strtol((const char *) &payload[3], NULL, 10);
+  //masks are 16-bit words in the protocol
+  if (ind < 0 || ind > 15) return;
 
   switch (payload[1]) {
     case 'A':

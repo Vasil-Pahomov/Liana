@@ -29,12 +29,30 @@ void LianaConfig::configLoad() {
   mqttPass = configJsonDoc["mqttPass"].as<String>();
   mqttTopic = configJsonDoc["mqttTopic"].as<String>();
 
-  if (leds > 1024 || leds <= 0) { leds = 100; } 
+  //keys missing in older config files fall back to compile-time defaults
+  nightEnabled = (configJsonDoc["nightEnabled"] | NIGHT_MODE_ENABLED) != 0;
+  nightStartHour = configJsonDoc["nightStartHour"] | NIGHT_START_HOUR;
+  nightEndHour = configJsonDoc["nightEndHour"] | NIGHT_END_HOUR;
+  nightAnim = configJsonDoc["nightAnim"] | NIGHT_ANIMATION_INDEX;
+  nightBrightness = configJsonDoc["nightBrightness"] | NIGHT_BRIGHTNESS;
+
+  validate();
+}
+
+void LianaConfig::validate() {
+  if (leds > MAXLEDS || leds <= 0) { leds = 100; }
   if (brightness > 255 || brightness < 0) { brightness = 100; }
   if (neofeature > 255 || neofeature < 0) { neofeature = 0; }
+  if (mqttPort < 0 || mqttPort > 65535) { mqttPort = 0; }
+  if (nightStartHour < 0 || nightStartHour > 23) { nightStartHour = NIGHT_START_HOUR; }
+  if (nightEndHour < 0 || nightEndHour > 23) { nightEndHour = NIGHT_END_HOUR; }
+  if (nightAnim < 0 || nightAnim >= ANIM_COUNT) { nightAnim = NIGHT_ANIMATION_INDEX; }
+  if (nightBrightness < 0 || nightBrightness > 255) { nightBrightness = NIGHT_BRIGHTNESS; }
 }
 
 void LianaConfig::configSave() {
+  validate();
+
   // Delete existing file, otherwise the configuration is appended to the file
   SPIFFS.remove(CONFIG_FILE_NAME);
 
@@ -58,7 +76,12 @@ void LianaConfig::configSave() {
   configJsonDoc["mqttLogin"] = mqttLogin;
   configJsonDoc["mqttPass"] = mqttPass;
   configJsonDoc["mqttTopic"] = mqttTopic;
-  
+
+  configJsonDoc["nightEnabled"] = nightEnabled ? 1 : 0;
+  configJsonDoc["nightStartHour"] = nightStartHour;
+  configJsonDoc["nightEndHour"] = nightEndHour;
+  configJsonDoc["nightAnim"] = nightAnim;
+  configJsonDoc["nightBrightness"] = nightBrightness;
 
   if (serializeJson(configJsonDoc, file) == 0) {
     Serial.println(F("Failed to write to file"));
@@ -78,7 +101,7 @@ int zeroBitCount(uint16_t val, int maxBits) {
 }
 
 int LianaConfig::getEnabledAnimsCount() {
-  return zeroBitCount(this->disabledAnims, ANIMS-1);
+  return zeroBitCount(this->disabledAnims, ANIM_COUNT);
 }
 
 int LianaConfig::getEnabledPalsCount() {
@@ -87,10 +110,13 @@ int LianaConfig::getEnabledPalsCount() {
 
 
 bool LianaConfig::isAnimEnabled(int animInd) {
+  //special animations (magic, OTA, off) are never disabled
+  if (animInd < 0 || animInd >= ANIM_COUNT) return true;
   return !(this->disabledAnims & (1 << animInd));
 }
 
 void LianaConfig::setAnimEnabled(int animInd, bool isEnabled) {
+  if (animInd < 0 || animInd >= ANIM_COUNT) return;
   if (isEnabled) {
     this->disabledAnims &= ~(1U << animInd);
   } else {
@@ -99,10 +125,12 @@ void LianaConfig::setAnimEnabled(int animInd, bool isEnabled) {
 }
 
 bool LianaConfig::isPalEnabled(int palInd) {
+  if (palInd < 0 || palInd >= PALS) return false;
   return !(this->disabledPals & (1 << palInd));
 }
 
 void LianaConfig::setPalEnabled(int palInd, bool isEnabled) {
+  if (palInd < 0 || palInd >= PALS) return;
   if (isEnabled) {
     this->disabledPals &= ~(1U << palInd);
   } else {

@@ -7,6 +7,7 @@
 #include "NeoPixelWrapper.cpp"
 #include "math.h"
 #include "hw_led.h"
+#include "timeutil.h"
 
 NeoPixelWrapper * strip;
 
@@ -17,7 +18,7 @@ int paletteInd = 0;
 int animInd = POWERON_ANIMATION_ID;
 
 //TODO: do something with this, it's bad thing to reference that var here
-extern unsigned long ms;
+extern unsigned long millisec;
 
 Palette * pals[PALS] = {&PalRgb, &PalRainbow, &PalRainbowStripe, &PalParty, &PalHeat, &PalFire, &PalIceBlue, &PalXMas, &PalNY, &PalBLR, &PalUA};
 
@@ -39,7 +40,7 @@ void Anim::setPalette(int palind) {
 
 void Anim::run()
 {    
-    if ( millis()<=nextms) {
+    if (!timeReached(nextms)) {
         return;
     }
   
@@ -52,7 +53,7 @@ void Anim::run()
 
     //transition coef, if within 0..1 - transition is active
     //changes from 1 to 0 during transition, so we interpolate from current color to previous
-    float transc = (float)((long)transms - (long)millis()) / TRANSITION_MS;
+    float transc = (float)(long)(transms - millis()) / TRANSITION_MS;
     Color * leds_prev = (leds == leds1) ? leds2 : leds1;
     int BRIGHTNESS = currentConfig.brightness;
     if (transc > 0) {
@@ -171,7 +172,7 @@ void Anim::setAnim(byte animInd)
             runImpl = &Anim::animStatic_Run;
             setUpOnPalChange = false;
         break;
-        case 100://special "magic" animation
+        case ANIMATION_MAGIC_INDEX://special "magic" animation
             setUpImpl = &Anim::animMagic_SetUp;
             runImpl = &Anim::animMagic_Run;
             setUpOnPalChange = false;
@@ -199,29 +200,33 @@ void setAnimPal() {
   anim.doSetUp();
 }
 
+bool isValidAnimIndex(int animIndex)
+{
+    return (animIndex >= 0 && animIndex < ANIM_COUNT)
+        || animIndex == ANIMATION_MAGIC_INDEX
+        || animIndex == ANIMATION_OFF_INDEX;
+}
+
 //sets animation and resets "change" time
 void setAnimation(int animIndex)
 {
-    if ((animIndex < 0 || animIndex >= ANIMS) && (animIndex != 255) ) return; //TODO: get rid of magic number 255 ("OFF" animation)
+    if (!isValidAnimIndex(animIndex)) return;
     animInd = animIndex;
     setAnimPal();
-    if (animInd == 0) {
-        ms = millis() + 10000;  //startup animation requires less duration; TODO: generalize somehow these magic constants 10000 here and in main file
-    } else {
-        ms = millis() + INTERVAL;
-    }
+    //startup animation has a fixed, shorter duration
+    millisec = millis() + ((animInd == ANIMATION_START_INDEX) ? START_ANIMATION_MS : INTERVAL);
 }
 
 void setPalette(int paletteIndex)
 {
-    if (paletteInd < 0 || paletteInd >= PALS) return;
+    if (paletteIndex < 0 || paletteIndex >= PALS) return;
     paletteInd = paletteIndex;
     setAnimPal();
-    ms = millis() + INTERVAL;
+    millisec = millis() + INTERVAL;
 }
 
 void setDuration(unsigned long durationMs) {
-    ms = millis() + durationMs;
+    millisec = millis() + durationMs;
 }
 
 Color Anim::leds1[MAXLEDS];

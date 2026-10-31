@@ -1,5 +1,5 @@
-#ifndef wifi_h
-#define wifi_h
+#ifndef liana_wifi_h
+#define liana_wifi_h
 
 void wifiSetUp();
 

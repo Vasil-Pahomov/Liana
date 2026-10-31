@@ -1,13 +1,18 @@
 {
-	"leds":"100",
-	"brightness": "100",
-	"neofeature": "0",
-	"disabledAnims" : "0",
-	"disableddPals" : "0",
+	"leds": 100,
+	"brightness": 100,
+	"neofeature": 0,
+	"disabledAnims": 0,
+	"disabledPals": 0,
 	"mqttHost": "",
-	"mqttPort": "",
+	"mqttPort": 0,
 	"mqttClientId": "",
 	"mqttLogin": "",
 	"mqttPass": "",
-	"mqttTopic": ""
+	"mqttTopic": "",
+	"nightEnabled": 1,
+	"nightStartHour": 21,
+	"nightEndHour": 6,
+	"nightAnim": 5,
+	"nightBrightness": 50
 }

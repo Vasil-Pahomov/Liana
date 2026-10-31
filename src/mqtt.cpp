@@ -9,7 +9,8 @@
 
 #include "anim.h"
 #include "config.h"
-#include "wifi.h"
+#include "liana_wifi.h"
+#include "timeutil.h"
 
 WiFiClient wifiClient;
 PubSubClient pubSubClient(wifiClient);
@@ -21,10 +22,10 @@ unsigned long lastConnAttemptMs;
 
 void mqttCallback(char* topic, byte* payload, unsigned int length) {
     if (strstr((char*)payload, "on") == (char*)payload) {
-        setAnimation(0);
+        setAnimation(ANIMATION_START_INDEX);
     } else
     if (strstr((char*)payload, "off") == (char*)payload) {
-        setAnimation(255);//TODO: explicit method for turning off, not using magic numbers
+        setAnimation(ANIMATION_OFF_INDEX);
     } else
     if (strstr((char*)payload, "palette=") == (char*)payload) {
         setPalette(atoi((char*) (payload+8)));
@@ -62,12 +63,12 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
 }
 
 void mqttReconnect() {
-    if (millis() < (lastConnAttemptMs + MQTT_CONNECT_INTERVAL)) return;
-    
+    if (!timeReached(lastConnAttemptMs + MQTT_CONNECT_INTERVAL)) return;
+
     lastConnAttemptMs = millis();
 
-    Serial.printf("Attempting MQTT connection to %s:%d, login=%s, pass=%s...", 
-        currentConfig.mqttHost.c_str(), currentConfig.mqttPort, currentConfig.mqttLogin.c_str(), currentConfig.mqttPass.c_str());
+    Serial.printf("Attempting MQTT connection to %s:%d, login=%s...",
+        currentConfig.mqttHost.c_str(), currentConfig.mqttPort, currentConfig.mqttLogin.c_str());
 
     if (pubSubClient.connect(currentConfig.mqttClientId.c_str(), currentConfig.mqttLogin.c_str(), currentConfig.mqttPass.c_str())) {
         Serial.println(F("connected"));

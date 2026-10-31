@@ -17,17 +17,19 @@
 #include <ArduinoOTA.h>
 #include <EspHtmlTemplateProcessor.h>
 #include <FileReader.h>
+#include <ezTime.h>
 
 #include "palette.h"
 #include "anim.h"
 #include "config.h"
 #include "web.h"
 #include "websocket.h"
-#include "wifi.h"
+#include "liana_wifi.h"
 #include "mqtt.h"
 #include "ota.h"
 #include "hw_button.h"
 #include "hw_led.h"
+#include "timeutil.h"
 
 
 void tests_runAll();
@@ -36,7 +38,37 @@ void tests_runAll();
 
 //#define USE_STATIC_BRB_AFTER_START // switch to static BRB after start animation for true Belarussians
 
-unsigned long ms = 10000;//startup animation duration, 10000 default
+unsigned long millisec = START_ANIMATION_MS; // deadline (millis) of the next automatic animation/palette change
+
+Timezone tz;
+
+// night mode state: true while the night animation and brightness are in effect
+static bool nightActive = false;
+// brightness to restore when the night is over
+static int dayBrightness = 0;
+
+static bool isNightHour(int hour) {
+  int from = currentConfig.nightStartHour;
+  int to = currentConfig.nightEndHour;
+  if (from == to) return false;
+  return (from < to) ? (hour >= from && hour < to) : (hour >= from || hour < to);
+}
+
+// switches night mode on/off according to the current local time
+static void nightModeUpdate() {
+  if (!currentConfig.nightEnabled || timeStatus() != timeSet) return;
+  bool night = isNightHour(tz.hour());
+  if (night == nightActive) return;
+  nightActive = night;
+  if (night) {
+    dayBrightness = currentConfig.brightness;
+    currentConfig.brightness = currentConfig.nightBrightness;
+    Serial.println(F("Night mode on"));
+  } else {
+    currentConfig.brightness = dayBrightness;
+    Serial.println(F("Night mode off"));
+  }
+}
 
 void setup() { 
   Serial.begin(115200);
@@ -52,6 +84,9 @@ void setup() {
 
   wifiSetUp();
   mqttSetup();
+
+  // a POSIX rule is applied locally; setLocation() would need the network, which is not up yet
+  tz.setPosix(F(TIMEZONE_POSIX));
 
   randomSeed(analogRead(0)*analogRead(1));
   anim.setAnim(animInd);
@@ -77,9 +112,11 @@ void loop() {
   
   anim.run();
   
-  if (millis() > ms && animInd != 255) {// animind == 255 is for turned off strip - it never ends automatically
-    ms = millis() + INTERVAL; 
-    
+  if (timeReached(millisec) && animInd != ANIMATION_OFF_INDEX) {// turned off strip never ends automatically
+    millisec = millis() + INTERVAL;
+
+    nightModeUpdate();
+
 #ifdef USE_START_ANIMATION  
     bool changeAnim = currentConfig.getEnabledAnimsCount() > 1;
     bool changePal = currentConfig.getEnabledPalsCount() > 1;
@@ -112,15 +149,20 @@ void loop() {
         while ((prevAnimInd == animInd) 
           || !currentConfig.isAnimEnabled(animInd)) { 
 #ifdef USE_START_ANIMATION
-          animInd = random(ANIMS+1);
+          animInd = random(ANIM_COUNT);
 #else
-          animInd = random(ANIMS) + 1; 
+          animInd = random(1, ANIM_COUNT);
           //Serial.printf("%d-%d\r\n", animInd, currentConfig.isAnimEnabled(animInd));
   #endif
         }
-        
-        if (animInd == 0) { 
-          ms = millis() + 10000;//startup animation has fixed 10 seconds length
+
+        //stick to the night animation at nighttime
+        if (nightActive) {
+          animInd = currentConfig.nightAnim;
+        }
+
+        if (animInd == ANIMATION_START_INDEX) {
+          millisec = millis() + START_ANIMATION_MS;//startup animation has a fixed length
         }
 
         setAnimPal();
@@ -146,6 +188,7 @@ void loop() {
   wifiLoop();
   mqttRun();
   otaLoop();
+  events();
   #if defined(SUPPORT_BUTTON)
   buttonsLoop();
   #endif

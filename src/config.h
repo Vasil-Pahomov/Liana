@@ -25,14 +25,17 @@
 // --------------
 // Animation config
 // --------------
-#define ANIMS 9 //number of animations to cycle randomly
+#define ANIM_COUNT 10 // number of regular animations (indices 0..ANIM_COUNT-1); 0 is the start animation, 1..ANIM_COUNT-1 are cycled randomly
 #define PALS 11 //number of palettes
 #define INTERVAL 30000 //change interval, msec
+#define START_ANIMATION_MS 10000 // the start animation has a fixed duration, msec
 
 #define MAXLEDS 1024 // maximum number of LEDs in the strip TODO: switch to dynamic arrays to save RAM
 
 #define TRANSITION_MS 1000 // transition time between animations, ms
 
+// special animation indices (outside 0..ANIM_COUNT-1)
+#define ANIMATION_MAGIC_INDEX 100
 #define ANIMATION_OTA_INDEX 101
 
 // 0 - start animation, 255 - off
@@ -51,16 +54,33 @@
 // --------------
 // WiFi config
 // --------------
-#define WIFI_AP_SSID "Liana"
+#define WIFI_AP_SSID "Liana Long"
 #define WIFI_CONNECTION_TIMEOUT 10000  //Timeout (in milliseconds) of waiting for WiFi connection
 #define MDNS_NAME "liana"
+
+// --------------
+// Time and night mode config
+// --------------
+// POSIX timezone rule; applied without network access (this one is Europe/Warsaw)
+#define TIMEZONE_POSIX "CET-1CEST,M3.5.0,M10.5.0/3"
+// defaults for night mode; runtime values live in config.json
+// (nightEnabled, nightStartHour, nightEndHour, nightAnim, nightBrightness)
+#define NIGHT_MODE_ENABLED 1
+#define NIGHT_START_HOUR 21
+#define NIGHT_END_HOUR 6
+#define NIGHT_ANIMATION_INDEX 5 // stars
+#define NIGHT_BRIGHTNESS 50
 
 #include <ArduinoJson.h>
 
 class LianaConfig {
   public:
-    LianaConfig() : leds(10),  brightness(255), configJsonDoc(1024) {}
-       
+    LianaConfig() : leds(10), brightness(255), neofeature(0),
+      mqttPort(0),
+      nightEnabled(NIGHT_MODE_ENABLED != 0), nightStartHour(NIGHT_START_HOUR), nightEndHour(NIGHT_END_HOUR),
+      nightAnim(NIGHT_ANIMATION_INDEX), nightBrightness(NIGHT_BRIGHTNESS),
+      configJsonDoc(1024), disabledAnims(0), disabledPals(0) {}
+
     //TODO: hide these public fields under properties
     int leds;
     int brightness; // brightness adjustment, up to 256
@@ -75,11 +95,21 @@ class LianaConfig {
     String mqttPass;
     String mqttTopic;
 
+    //night mode: at nighttime a fixed animation is played with reduced brightness
+    bool nightEnabled;
+    int nightStartHour; // 0..23, local time
+    int nightEndHour;   // 0..23, local time
+    int nightAnim;      // animation index to play at night
+    int nightBrightness;
+
     DynamicJsonDocument configJsonDoc;
-  
+
     void configLoad();
-  
+
     void configSave();
+
+    //clamps all fields to valid ranges
+    void validate();
 
     int getEnabledAnimsCount();
 

@@ -30,6 +30,7 @@ public:
       _type(NeoPixelType_Rgb),
       _pRgb(NULL),
       _pBrg(NULL),
+      _pBgr(NULL),
       _pGrb(NULL),
       _pRbg(NULL),
       _pRgbw(NULL),
@@ -214,7 +215,7 @@ private:
     switch (_type) {
       case NeoPixelType_Rgb:  delete _pRgb ; _pRgb  = NULL; break;
       case NeoPixelType_Brg:  delete _pBrg ; _pBrg  = NULL; break;
-      case NeoPixelType_Bgr:  delete _pBrg ; _pBrg  = NULL; break;
+      case NeoPixelType_Bgr:  delete _pBgr ; _pBgr  = NULL; break;
       case NeoPixelType_Grb:  delete _pGrb ; _pGrb  = NULL; break;
       case NeoPixelType_Rbg:  delete _pRbg ; _pRbg  = NULL; break;
       case NeoPixelType_Rgbw: delete _pRgbw; _pRgbw = NULL; break;

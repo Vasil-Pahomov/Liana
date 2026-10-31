@@ -8,20 +8,42 @@ WebServer webServer(80);
 #error "Unsupported board class"
 #endif
 #include <EspHtmlTemplateProcessor.h>
+#include <ezTime.h>
 #include "config.h"
 #include "ota.h"
+
+extern Timezone tz;
 
 EspHtmlTemplateProcessor templateProcessor(&webServer);
 
 static constexpr const char *redirectStr = "<script>window.location='/'</script>Not found. <a href='/'>Home</a>";
 
+//escapes characters that are special in HTML text and attribute values
+static String htmlEscape(const String& s) {
+  String out;
+  out.reserve(s.length());
+  for (unsigned int i = 0; i < s.length(); i++) {
+    char c = s[i];
+    switch (c) {
+      case '&':  out += F("&amp;"); break;
+      case '<':  out += F("&lt;"); break;
+      case '>':  out += F("&gt;"); break;
+      case '"':  out += F("&quot;"); break;
+      case '\'': out += F("&#39;"); break;
+      default:   out += c;
+    }
+  }
+  return out;
+}
+
+//resolves {{key}} placeholders in .htm templates: query argument first, then config value
 String indexKeyProcessor(String& key)
 {
   if (webServer.hasArg(key)) {
-    return webServer.arg(key);
+    return htmlEscape(webServer.arg(key));
   }
   if (currentConfig.configJsonDoc.containsKey(key)) {
-    return currentConfig.configJsonDoc[key];
+    return htmlEscape(currentConfig.configJsonDoc[key].as<String>());
   }
   return " ";
 }
@@ -29,6 +51,8 @@ String indexKeyProcessor(String& key)
 //Base code from https://github.com/r-downing/SPIFFSReadServer/blob/master/SPIFFSReadServer.h
 bool webFileRead(String path) {
   if (path.endsWith("/")) path += "index.htm";
+  //the config file holds the MQTT password, never serve it
+  if (path == CONFIG_FILE_NAME) return false;
   String contentType;
   bool useTemplate = false;
   if (path.endsWith(".htm") || path.endsWith(".html")) { contentType = "text/html"; useTemplate = true; }
@@ -126,6 +150,13 @@ void webOnMqttSettings() {
   webRedirectHomeWithRestartMessage();
 }
 
+//diagnostics: local time as the night mode sees it
+void webOnCurrentTime() {
+  String resp = tz.dateTime();
+  resp += (timeStatus() == timeSet) ? F(" (time synced)") : F(" (time NOT synced)");
+  webServer.send(200, "text/plain", resp);
+}
+
 
 void webSetup() {
   Serial.println("WebServer is setuping");
@@ -141,6 +172,7 @@ void webSetup() {
   webServer.on("/setup", HTTP_POST, webOnSetup);
   webServer.on("/mqtt", HTTP_POST, webOnMqttSettings);
   webServer.on("/ota", HTTP_POST, webOnOTA);
+  webServer.on("/time", HTTP_GET, webOnCurrentTime);
 
   webServer.begin();
   Serial.println("WebServer setuped");

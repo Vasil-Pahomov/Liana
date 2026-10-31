@@ -5,7 +5,7 @@
 void Anim::animSpread_SetUp() {
     Serial.print(F("(spread)"));
     inc = random(2,5);
-    memset(seq, 0, ledsNum);
+    memset(seq, 0, ledsNum * sizeof(seq[0]));
     phase = ledsNum / 5; // pos is width of the "spread"
 }
 
