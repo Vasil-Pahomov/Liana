@@ -9,21 +9,21 @@ void Effect::attach(const EffectContext& ctx) {
     heightTransTable = ctx.heightTable;
 }
 
-// Single source of truth for effect ids. The UI (data/index.htm) and the README list the same ids.
+// Single source of truth for effect ids, names and UI labels. The UI builds its lists from /api/catalog.
 const EffectInfo EFFECTS[] = {
-    { ANIMATION_START_INDEX, "start",     createEffectStart,     true  },
-    { 1,                     "run",       createEffectRun,       true  },
-    { 2,                     "pixiedust", createEffectPixieDust, true  },
-    { 3,                     "sparkr",    createEffectSparkr,    true  },
-    { 4,                     "randcyc",   createEffectRandCyc,   true  },
-    { 5,                     "stars",     createEffectStars,     false },
-    { 6,                     "spread",    createEffectSpread,    false },
-    { 7,                     "fly",       createEffectFly,       false },
-    { 8,                     "pulse",     createEffectPulse,     false },
-    { 9,                     "static",    createEffectStatic,    false },
-    { ANIMATION_MAGIC_INDEX, "magic",     createEffectMagic,     false },
-    { ANIMATION_OTA_INDEX,   "ota",       createEffectOTA,       false },
-    { ANIMATION_OFF_INDEX,   "off",       createEffectOff,       false },
+    { ANIMATION_START_INDEX, "start",     "Начальная", createEffectStart,     true  },
+    { 1,                     "run",       "Бег",       createEffectRun,       true  },
+    { 2,                     "pixiedust", "Пыльца",    createEffectPixieDust, true  },
+    { 3,                     "sparkr",    "Вспышки",   createEffectSparkr,    true  },
+    { 4,                     "randcyc",   "Мерцание",  createEffectRandCyc,   true  },
+    { 5,                     "stars",     "Звёзды",    createEffectStars,     false },
+    { 6,                     "spread",    "Полосы",    createEffectSpread,    false },
+    { 7,                     "fly",       "Полёт",     createEffectFly,       false },
+    { 8,                     "pulse",     "Пульс",     createEffectPulse,     false },
+    { 9,                     "static",    "Статика",   createEffectStatic,    false },
+    { ANIMATION_MAGIC_INDEX, "magic",     "Магия",     createEffectMagic,     false },
+    { ANIMATION_OTA_INDEX,   "ota",       "OTA",       createEffectOTA,       false },
+    { ANIMATION_OFF_INDEX,   "off",       "Выкл",      createEffectOff,       false },
 };
 
 const int EFFECT_COUNT = sizeof(EFFECTS) / sizeof(EFFECTS[0]);
@@ -33,4 +33,9 @@ const EffectInfo* findEffect(int id) {
         if (EFFECTS[i].id == id) return &EFFECTS[i];
     }
     return nullptr;
+}
+
+bool isValidAnimIndex(int animIndex)
+{
+    return animIndex != ANIMATION_OTA_INDEX && findEffect(animIndex) != nullptr;
 }

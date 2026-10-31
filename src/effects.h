@@ -78,7 +78,8 @@ typedef Effect* (*EffectFactory)();
 
 struct EffectInfo {
     uint8_t id;                  // index used by the UI, WebSocket, MQTT and the config masks
-    const char* name;
+    const char* name;            // short technical name
+    const char* title;           // label shown in the UI
     EffectFactory create;
     bool restartOnPaletteChange; // true: a palette change restarts the effect (with a crossfade)
 };
@@ -89,6 +90,9 @@ extern const int EFFECT_COUNT;
 
 // nullptr when there is no effect with such id
 const EffectInfo* findEffect(int id);
+
+// true if the id denotes an effect the user may select (anything registered except OTA)
+bool isValidAnimIndex(int animIndex);
 
 // factories, one per effect source file
 Effect* createEffectStart();

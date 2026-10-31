@@ -4,6 +4,7 @@
 #include "anim.h"
 #include "brightness.h"
 #include "config.h"
+#include "settings.h"
 #include "NeoPixelWrapper.h"
 #include "math.h"
 #include "hw_led.h"
@@ -12,15 +13,6 @@
 NeoPixelWrapper * strip;
 
 Anim anim;
-
-//TODO: hide inside the class, don't expose
-int paletteInd = 0;
-int animInd = POWERON_ANIMATION_ID;
-
-//TODO: do something with this, it's bad thing to reference that var here
-extern unsigned long millisec;
-
-Palette * pals[PALS] = {&PalRgb, &PalRainbow, &PalRainbowStripe, &PalParty, &PalHeat, &PalFire, &PalIceBlue, &PalXMas, &PalNY, &PalBLR, &PalUA};
 
 // gamma correction (BRI table) and global brightness
 static inline RgbColor toStripColor(const Color& c, int brightness) {
@@ -33,7 +25,14 @@ static inline RgbColor toStripColor(const Color& c, int brightness) {
 void Anim::begin()
 {
     if (initialized) return;
-    ledsNum = currentConfig.leds;
+    ledsNum = settings.leds;
+
+    // the registry must provide every regular effect id, otherwise cycling would select nothing
+    for (int id = 0; id < ANIM_COUNT; id++) {
+        if (findEffect(id) == nullptr) {
+            Serial.printf("Effect %d is missing in the registry\n", id);
+        }
+    }
 
     // height translation table (used by some effects to linearly align data across a NY tree assuming it's conic)
     heightTable = new byte[ledsNum];
@@ -47,12 +46,12 @@ void Anim::begin()
         ctx.tmp = new Color[ledsNum];
         ctx.seq = new int[ledsNum]();
         ctx.ledsNum = ledsNum;
-        ctx.palette = pals[0];
+        ctx.palette = PALETTES[0].palette;
         ctx.heightTable = heightTable;
     }
 
     strip = new NeoPixelWrapper();
-    strip->Begin(currentConfig.neofeature, ledsNum, LED_PIN);
+    strip->Begin(settings.neofeature, ledsNum, LED_PIN);
 
     nextFrameMs = millis();
     initialized = true;
@@ -70,7 +69,7 @@ void Anim::select(int effectId, int palInd)
     if (!initialized) return;
     const EffectInfo* info = findEffect(effectId);
     if (info == nullptr) info = findEffect(ANIMATION_OFF_INDEX);
-    if (palInd < 0 || palInd >= PALS) palInd = 0;
+    if (palInd < 0 || palInd >= PALETTE_COUNT) palInd = 0;
 
     // the outgoing slot may still hold an effect from an unfinished crossfade; it's dropped,
     // then the current effect becomes the outgoing one and the new effect takes the freed slot
@@ -79,7 +78,7 @@ void Anim::select(int effectId, int palInd)
 
     Slot& s = slots[cur];
     s.info = info;
-    s.ctx.palette = pals[palInd];
+    s.ctx.palette = PALETTES[palInd].palette;
     for (int i = 0; i < ledsNum; i++) {
         s.ctx.leds[i] = Color(0);
     }
@@ -100,14 +99,14 @@ void Anim::select(int effectId, int palInd)
 
 void Anim::setPalette(int palInd)
 {
-    if (palInd < 0 || palInd >= PALS) return;
+    if (palInd < 0 || palInd >= PALETTE_COUNT) return;
     Slot& s = slots[cur];
     if (s.effect == nullptr) return;
     if (s.info->restartOnPaletteChange) {
         select(s.info->id, palInd);
     } else {
-        s.ctx.palette = pals[palInd];
-        s.effect->setPalette(pals[palInd]);
+        s.ctx.palette = PALETTES[palInd].palette;
+        s.effect->setPalette(s.ctx.palette);
     }
 }
 
@@ -136,7 +135,7 @@ void Anim::run()
         }
     }
 
-    int brightness = currentConfig.brightness;
+    int brightness = settings.brightness;
     if (mix > 0) {
         // the outgoing effect keeps animating while it fades out
         o.effect->run();
@@ -159,38 +158,4 @@ void Anim::setMagicParams(byte ind, byte position, byte color, bool isBoom)
     if (s.effect != nullptr && s.info->id == ANIMATION_MAGIC_INDEX) {
         static_cast<EffectMagic*>(s.effect)->setParams(ind, position, color, isBoom);
     }
-}
-
-bool isValidAnimIndex(int animIndex)
-{
-    return (animIndex >= 0 && animIndex < ANIM_COUNT)
-        || animIndex == ANIMATION_MAGIC_INDEX
-        || animIndex == ANIMATION_OFF_INDEX;
-}
-
-//starts animation and palette specified in animInd and paletteInd (crossfading from the running one)
-void setAnimPal() {
-  anim.select(animInd, paletteInd);
-}
-
-//sets animation and resets "change" time
-void setAnimation(int animIndex)
-{
-    if (!isValidAnimIndex(animIndex)) return;
-    animInd = animIndex;
-    setAnimPal();
-    //startup animation has a fixed, shorter duration
-    millisec = millis() + ((animInd == ANIMATION_START_INDEX) ? START_ANIMATION_MS : INTERVAL);
-}
-
-void setPalette(int paletteIndex)
-{
-    if (paletteIndex < 0 || paletteIndex >= PALS) return;
-    paletteInd = paletteIndex;
-    setAnimPal();
-    millisec = millis() + INTERVAL;
-}
-
-void setDuration(unsigned long durationMs) {
-    millisec = millis() + durationMs;
 }

@@ -5,12 +5,13 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 	<meta charset="utf-8"/>
 	<title>Настройки гирлянды</title>
-	<link rel="stylesheet" type="text/css" href="s.css?v1">
+	<link rel="stylesheet" type="text/css" href="s.css?v2">
 	<script>
 document.addEventListener("DOMContentLoaded", start);
 
 function start() {
 	document.getElementById('neofeature').value = '{{neofeature}}';
+	document.getElementById('nightEnabled').checked = '{{nightEnabled}}' === '1';
 }
 	</script>
 </head>
@@ -36,12 +37,26 @@ function start() {
 					<option value="6">BGR</option>
 				</select>
 			</label>
+			<br><hr>
+			<label><input type='checkbox' id='nightEnabled' name='nightEnabled' value='1'>Ночной режим</label>
+			<label>Начало (час, 0..23)
+				<input type='number' min='0' max='23' name='nightStartHour' value='{{nightStartHour}}'>
+			</label>
+			<label>Конец (час, 0..23)
+				<input type='number' min='0' max='23' name='nightEndHour' value='{{nightEndHour}}'>
+			</label>
+			<label>Эффект ночью (номер)
+				<input type='number' min='0' max='9' name='nightAnim' value='{{nightAnim}}'>
+			</label>
+			<label>Яркость ночью (0..255)
+				<input type='number' min='0' max='255' name='nightBrightness' value='{{nightBrightness}}'>
+			</label>
 			<br><br>
 
 			<button type='submit'>Применить</button>
 		</form>
 		<br>
-		<a href="javascript:history.back()">Назад</a> | 
+		<a href="javascript:history.back()">Назад</a> |
 		<a href="/">Домой</a>
 	</div>
 </body>

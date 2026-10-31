@@ -8,7 +8,7 @@ struct Palette
 {
     int numColors;
     Color *colors;
-    
+
     /**
     * Get the interpolated color from the palette.
     * The argument is a floating number between 0 and 1
@@ -19,12 +19,12 @@ struct Palette
             float t0 = i*(numColors-1) - truncf(i*(numColors-1));
             return colors[i0].interpolate(colors[i0+1], t0);
         }
-        else {return colors[numColors-1];} //avoid t0==0 when i==1        
+        else {return colors[numColors-1];} //avoid t0==0 when i==1
     }
 
     /**
-     * Gets the interpolated color with smooth cycling. 
-     * That is, color for i=0 is equal to color for i=1, 
+     * Gets the interpolated color with smooth cycling.
+     * That is, color for i=0 is equal to color for i=1,
      * but between these values color go across all the palette.
      */
         Color getPalColorCycle(float i)
@@ -34,7 +34,7 @@ struct Palette
 
         // decimal part is used to interpolate between the two colors
         float t0 = i*numColors - trunc(i*numColors);
-        
+
         return colors[i0].interpolate(colors[i1], t0);
     }
 
@@ -53,22 +53,20 @@ struct Palette
         }
         return newColor;
     }
-       
+
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// Palette definitions
+// Palette registry: the index in PALETTES[] is the palette id used by the UI, WebSocket, MQTT and the config mask
 ////////////////////////////////////////////////////////////////////////////////
-extern Palette PalRgb;
-extern Palette PalRainbow;
-extern Palette PalRainbowStripe;
-extern Palette PalParty;
-extern Palette PalHeat;
-extern Palette PalFire;
-extern Palette PalIceBlue;
-extern Palette PalXMas;
-extern Palette PalBLR;
-extern Palette PalUA;
-extern Palette PalNY;
+struct PaletteInfo
+{
+    const char* name;   // short technical name
+    const char* title;  // label shown in the UI
+    Palette* palette;
+};
+
+extern const PaletteInfo PALETTES[];
+extern const int PALETTE_COUNT;
 
 #endif

@@ -46,30 +46,22 @@ Color PalHeat_[] =
 };
 Palette PalHeat = { 4, PalHeat_ };
 
-/*
 Color PalFire_[] =
 {
-    0x000000, 0x440000, 
-    0x990000, 0xFF0000, 
-    0xFF6600, 0xFFCC00
-};
-*/
-Color PalFire_[] =
-{
-    0x000000, 0x220000, 
-    0x880000, 0xFF0000, 
+    0x000000, 0x220000,
+    0x880000, 0xFF0000,
     0xFF6600, 0xFFCC00
 };
 Palette PalFire = { 6, PalFire_ };
 
 
-Color PalBLR_[] = 
+Color PalBLR_[] =
 {
     0xe0e0e0, 0xf00000, 0xe0e0e0
 };
 Palette PalBLR = { 3, PalBLR_};
 
-Color PalUA_[] = 
+Color PalUA_[] =
 {
     0xffc000, 0x4040ff
 };
@@ -78,21 +70,38 @@ Palette PalUA = { 2, PalUA_};
 
 // palettes below are taken from http://www.color-hex.com/color-palettes/ (and modified)
 
-Color PalIceBlue_[] = 
+Color PalIceBlue_[] =
 {
     0xffffff, 0x0000ff, 0x00ffff
 };
 Palette PalIceBlue = { 3, PalIceBlue_};
 
-Color PalXMas_[] = 
+Color PalXMas_[] =
 {
     0xff0000, 0x00ff00
 };
 Palette PalXMas = { 2, PalXMas_};
 
-Color PalNY_[] = 
+Color PalNY_[] =
 {
     0xffe700, 0xc900ff, 0x2f00ff, 0xff00c1, 0xff00c1
 };
 
 Palette PalNY = {5, PalNY_};
+
+// The order defines palette ids; append new palettes at the end to keep saved masks valid.
+const PaletteInfo PALETTES[] = {
+    { "rgb",           "RGB",              &PalRgb },
+    { "rainbow",       "Радуга",           &PalRainbow },
+    { "rainbowstripe", "Радуга с полосами", &PalRainbowStripe },
+    { "party",         "Вечеринка",        &PalParty },
+    { "heat",          "Жар",              &PalHeat },
+    { "fire",          "Огонь",            &PalFire },
+    { "iceblue",       "Лёд",              &PalIceBlue },
+    { "xmas",          "Рождество",        &PalXMas },
+    { "ny",            "Новый год",        &PalNY },
+    { "blr",           "БЧБ",              &PalBLR },
+    { "ua",            "Украина",          &PalUA },
+};
+
+const int PALETTE_COUNT = sizeof(PALETTES) / sizeof(PALETTES[0]);

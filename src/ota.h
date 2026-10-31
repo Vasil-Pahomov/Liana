@@ -2,7 +2,12 @@
 #define OTA_H_INCLUDED
 
 #define SUPPORT_OTA
-#define OTA_PASSWORD (const char *)"123OtA!_456"
+
+// Password of ArduinoOTA. Override it with a build flag in platformio_local.ini:
+//   build_flags = -DOTA_PASSWORD=\"your-password\"
+#ifndef OTA_PASSWORD
+#define OTA_PASSWORD "123OtA!_456"
+#endif
 
 void otaSetUp();
 

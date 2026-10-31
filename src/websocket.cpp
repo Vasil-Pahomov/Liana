@@ -1,115 +1,87 @@
 #include <WebSocketsServer.h>
+#include <ArduinoJson.h>
 
+#include "websocket.h"
 #include "anim.h"
+#include "player.h"
+#include "effects.h"
+#include "palette.h"
+#include "api.h"
 #include "config.h"
 
-WebSocketsServer webSocket(81); 
+WebSocketsServer webSocket(81);
 
-//TODO: do something with this, it's bad thing to reference that var here
-extern unsigned long millisec;
+/* Messages are JSON objects.
+ * Server -> client:  {"type":"state", "anim":N, "pal":N, "on":bool, "disabledAnims":mask, "disabledPals":mask, "brightness":N, "night":bool}
+ * Client -> server:  {"cmd":"info"}                                   - request the state; also postpones automatic cycling
+ *                    {"cmd":"set", "anim":N, "pal":N}                  - select effect and palette (anim 255 = off)
+ *                    {"cmd":"enable", "kind":"anim"|"pal", "index":N, "enabled":bool}
+ *                    {"cmd":"point", "pos":0..255, "color":0..255, "boom":bool} - input for the "magic" effect
+ */
 
-//notifies websocket connection num of current status
-//if num is -1, notifies all active connections
-//Sent data is as follows:
-//1st char = 'I'
-//2-3 char   - HEX byte, current animation index, -1 if strip is off
-//4-5 char   - HEX byte, current palette inde
-//6-9 char   - HEX word, disabled animations (bit mask)
-//10-13 char - HEX word, disabled palettes (bit mask)
+//sends the current state to connection num, or to all connections if num is -1
 void wsNotify(int num) {
-  char buf[100];
-  sprintf(buf, "I%02X%02X%04X%04X", animInd, paletteInd, currentConfig.getDisabledAnimsMask(), currentConfig.getDisabledPalsMask());
+  JsonDocument doc;
+  JsonObject obj = doc.to<JsonObject>();
+  obj["type"] = "state";
+  stateToJson(obj);
+  String out;
+  serializeJson(doc, out);
   if (num >= 0) {
-    webSocket.sendTXT(num, buf, 0);
+    webSocket.sendTXT(num, out);
   } else {
-    webSocket.broadcastTXT(buf, 0);
+    webSocket.broadcastTXT(out);
   }
 }
 
-/* Point command
- * Sent by web when device is admittedly pointed at the strip
- * 1st char - space or 'B', latter means that "Boom" gesture was made
- * 2-3 char - HEX byte, number of LED to which device points
- * 4-5 char - HEX byte, color index (roll inclination of the device)
- */
-void wsPoint(uint8_t num, uint8_t * payload, size_t length) {
-  if (animInd == ANIMATION_MAGIC_INDEX && length >= 3) {
-    uint32_t data = (uint32_t) strtol((const char *) &payload[2], NULL, 16);
-    byte spotColor = (data >> 8) & 0xFF;
-    anim.setMagicParams(num, data & 0xFF, spotColor, payload[1] == 'B');
-  }      
-}
+static void wsHandleCommand(uint8_t num, JsonObjectConst msg) {
+  const char* cmd = msg["cmd"] | "";
 
-/* Set command
- * Sets animation and palette
- * 1-2 char - HEX byte, animation index, 255 means power off
- * 3-4 char - HEX byte, palette index
- */
-void wsSet(uint8_t num, uint8_t * payload, size_t length) {
-  uint32_t data = (uint32_t) strtol((const char *) &payload[1], NULL, 16);
-  int newAnimInd = (data >> 8) & 0xFF;
-  int newPaletteInd = data & 0xFF;
-  if (!isValidAnimIndex(newAnimInd) || newPaletteInd >= PALS) {
-    Serial.printf("WS set rejected: anim=%d, pal=%d\n", newAnimInd, newPaletteInd);
-    return;
+  if (strcmp(cmd, "info") == 0) {
+    wsNotify(num);
+    if (player.currentAnim() != ANIMATION_START_INDEX) {
+      player.holdFor(INTERVAL); //"reset" duration for any animation except start
+    }
+
+  } else if (strcmp(cmd, "set") == 0) {
+    int animId = msg["anim"] | -1;
+    int palInd = msg["pal"] | player.currentPalette();
+    if (!isValidAnimIndex(animId) || palInd < 0 || palInd >= PALETTE_COUNT) {
+      Serial.printf("WS set rejected: anim=%d, pal=%d\n", animId, palInd);
+      return;
+    }
+    player.select(animId, palInd);
+
+  } else if (strcmp(cmd, "enable") == 0) {
+    const char* kind = msg["kind"] | "";
+    int index = msg["index"] | -1;
+    bool enabled = msg["enabled"] | true;
+    if (strcmp(kind, "anim") == 0) {
+      player.setAnimEnabled(index, enabled);
+    } else if (strcmp(kind, "pal") == 0) {
+      player.setPalEnabled(index, enabled);
+    }
+    wsNotify(-1); //clients that sent a rejected change get the real state back
+
+  } else if (strcmp(cmd, "point") == 0) {
+    if (player.currentAnim() == ANIMATION_MAGIC_INDEX) {
+      int pos = msg["pos"] | 0;
+      int color = msg["color"] | 0;
+      bool boom = msg["boom"] | false;
+      anim.setMagicParams(num, (byte)pos, (byte)color, boom);
+    }
+
+  } else {
+    Serial.printf("Unknown WS command: %s\n", cmd);
   }
-  animInd = newAnimInd;
-  paletteInd = newPaletteInd;
-  setAnimPal();
 }
-
-/* Info command
- * Triggers sending current data
- * No input parameters
- */
-void wsInfo(uint8_t num, uint8_t * payload, size_t length) {
-  wsNotify(num);
-  if (animInd != ANIMATION_START_INDEX) {
-    millisec = millis() + INTERVAL; //"reset" duration for any animation except start
-  }
-}
-
-/* Set disabled/enabled state for animations and palettes
- * 1 char - 'A' for animation and 'P' for palette
- * 2 char - 'D' for disabling and 'E' for enabling
- * 3+ char - decimal number of animation/palette to change state
- */
-void wsSetDisabled(uint8_t num, uint8_t * payload, size_t length) {
-  if (length < 4) return;
-  bool isEnabling = payload[2] != 'D';
-  int ind = strtol((const char *) &payload[3], NULL, 10);
-  //masks are 16-bit words in the protocol
-  if (ind < 0 || ind > 15) return;
-
-  switch (payload[1]) {
-    case 'A':
-      if (isEnabling || currentConfig.getEnabledAnimsCount() > (currentConfig.isAnimEnabled(0) && ind != 0 ? 2 : 1)) {
-        currentConfig.setAnimEnabled(ind, isEnabling);
-        currentConfig.configSave();
-      }
-      break;
-    case 'P':
-      if (isEnabling || currentConfig.getEnabledPalsCount() > 1) {
-        Serial.print("Pal change, cnt = "); Serial.println(currentConfig.getEnabledPalsCount());
-        currentConfig.setPalEnabled(ind, isEnabling);
-        currentConfig.configSave();
-      }  else {
-        Serial.print("No pal change, cnt = "); Serial.println(currentConfig.getEnabledPalsCount());
-      }
-      break;
-  }
-  
-  wsNotify(-1); //notify other connections of change
-}
-
-
 
 void wsRun()
 {
   webSocket.loop();
 }
 
-void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length) { 
+void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length) {
   switch (type) {
     case WStype_DISCONNECTED:             // if the websocket is disconnected
       Serial.printf("[%u] Disconnected!\n", num);
@@ -119,23 +91,14 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
         Serial.printf("[%u] Connected from %d.%d.%d.%d url: %s\n", num, ip[0], ip[1], ip[2], ip[3], payload);
       }
       break;
-    case WStype_TEXT:                     // if new text data is received
-      switch (payload[0]) {
-        case 'P':
-          wsPoint(num, payload, length);
-          break;
-        case 'S':
-          wsSet(num, payload, length);
-          break;
-        case 'I':
-          wsInfo(num, payload, length);
-          break;
-        case 'D':
-          wsSetDisabled(num, payload, length);
-          break;
-        default:
-          Serial.printf("Unknown WS command: %s", payload);
-          break;
+    case WStype_TEXT: {                   // if new text data is received
+        JsonDocument doc;
+        DeserializationError err = deserializeJson(doc, (const char*)payload, length);
+        if (err) {
+          Serial.printf("WS message is not JSON: %s\n", err.c_str());
+        } else {
+          wsHandleCommand(num, doc.as<JsonObjectConst>());
+        }
       }
       break;
     default:
@@ -148,5 +111,5 @@ void wsSetup()
 {
   webSocket.begin();
   webSocket.onEvent(webSocketEvent);
+  player.onChange([]() { wsNotify(-1); });
 }
-

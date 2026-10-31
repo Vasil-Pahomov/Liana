@@ -1,4 +1,5 @@
 #include "effects.h"
+#include "settings.h"
 
 // A white dot runs along the strip leaving a fading trail, then the strip fills with noise.
 class EffectStart : public Effect {
@@ -19,7 +20,7 @@ public:
             }
         } else if (phase >= ledsNum)
         {
-            int BRIGHTNESS = currentConfig.brightness;
+            int BRIGHTNESS = settings.brightness;
             for(int i=0; i<ledsNum; i++) {
                 int r = ledsNum + BRIGHTNESS - phase + rngb();
                 r = min(r,BRIGHTNESS); leds[i].r = (byte)max(r,0);

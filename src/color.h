@@ -1,7 +1,16 @@
 #ifndef color_h
 #define color_h
-#include <Arduino.h>
 
+// Arduino-free except for println(), so that the color math can be unit tested on the host
+#ifdef ARDUINO
+#include <Arduino.h>
+#else
+#include <stdint.h>
+#include <stdlib.h>
+typedef uint8_t byte;
+#endif
+
+// pseudo random numbers, defined in Liana.cpp (tests provide their own)
 unsigned int rng();
 
 byte rngb();
@@ -21,7 +30,7 @@ struct Color
     };
 
     inline Color() __attribute__((always_inline)) : r(0), g(0), b(0) {}
-    
+
     // allow construction from R, G, B
     inline Color( uint8_t ir, uint8_t ig, uint8_t ib)  __attribute__((always_inline))
     : r(ir), g(ig), b(ib)
@@ -34,7 +43,7 @@ struct Color
     {
     }
 
-    //interpolates between this color and provided. 
+    //interpolates between this color and provided.
     //x is from 0 to 1, 0 gives this color, 1 gives provided color, values between give interpolation
     Color interpolate(Color color, float x)
     {
@@ -66,10 +75,10 @@ struct Color
       if (r>=dr) { r=r-dr; } else { r=0; }
       if (g>=dg) { g=g-dg; } else { g=0; }
       if (b>=db) { b=b-db; } else { b=0; }
-    }  
+    }
 
     //adds another color up to saturation
-    void addSaturate(Color color) 
+    void addSaturate(Color color)
     {
       r = ( (r + color.r) <= 255) ? (r + color.r) : 255;
       g = ( (g + color.g) <= 255) ? (g + color.g) : 255;
@@ -81,11 +90,13 @@ struct Color
       return abs(r-c.r) + abs(g-c.g) + abs(b-c.b);
     }
 
+#ifdef ARDUINO
     void println() {
         Serial.print(F("r="));Serial.print(r);
         Serial.print(F("g="));Serial.print(g);
         Serial.print(F("b="));Serial.println(b);
     }
+#endif
 } ;
 
 #endif

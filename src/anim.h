@@ -4,15 +4,12 @@
 #include "config.h"
 #include "effects.h"
 
-//TODO: it's better to hide these variables and make functions that accepts appropriate arguments
-extern int paletteInd;
-extern int animInd;
-
 // Animation engine: owns the LED buffers, runs the current effect (and the outgoing one while
 // crossfading), applies gamma and brightness and pushes the frame to the strip.
+// What to play and when to change it is decided by Player.
 class Anim {
 public:
-    // allocates buffers for currentConfig.leds LEDs and initialises the strip; call once after the config is loaded
+    // allocates buffers for settings.leds LEDs and initialises the strip; call once after the settings are loaded
     void begin();
 
     // starts the effect with the given palette; the previous effect keeps running and fades out over TRANSITION_MS
@@ -48,16 +45,5 @@ private:
 };
 
 extern Anim anim;
-
-//true if the index denotes an animation the user may select (regular, magic or off)
-bool isValidAnimIndex(int animIndex);
-
-void setAnimation(int animIndex);
-
-void setPalette(int paletteIndex);
-
-void setDuration(unsigned long durationMs);
-
-void setAnimPal();
 
 #endif

@@ -7,8 +7,10 @@
 #error "Unsupported board class"
 #endif
 
-#include "anim.h"
-#include "config.h"
+#include "mqtt.h"
+#include "player.h"
+#include "effects.h"
+#include "settings.h"
 #include "liana_wifi.h"
 #include "timeutil.h"
 
@@ -20,45 +22,53 @@ char mqttHost[100];
 unsigned long lastConnAttemptMs;
 #define MQTT_CONNECT_INTERVAL 10000
 
+static bool startsWith(const char* s, const char* prefix) {
+    return strncmp(s, prefix, strlen(prefix)) == 0;
+}
+
 void mqttCallback(char* topic, byte* payload, unsigned int length) {
-    if (strstr((char*)payload, "on") == (char*)payload) {
-        setAnimation(ANIMATION_START_INDEX);
+    // PubSubClient does not terminate the payload
+    char cmd[64];
+    unsigned int n = length < sizeof(cmd) - 1 ? length : sizeof(cmd) - 1;
+    memcpy(cmd, payload, n);
+    cmd[n] = '\0';
+
+    if (startsWith(cmd, "on")) {
+        player.turnOn();
     } else
-    if (strstr((char*)payload, "off") == (char*)payload) {
-        setAnimation(ANIMATION_OFF_INDEX);
+    if (startsWith(cmd, "off")) {
+        player.turnOff();
     } else
-    if (strstr((char*)payload, "palette=") == (char*)payload) {
-        setPalette(atoi((char*) (payload+8)));
-    } else 
-    if (strstr((char*)payload, "animation=") == (char*)payload) {
-        setAnimation(atoi((char*) (payload+10)));
+    if (startsWith(cmd, "palette=")) {
+        player.setPalette(atoi(cmd + 8));
     } else
-    if (strstr((char*)payload, "duration=") == (char*)payload) {
-        setDuration(atol((char*)(payload+9))*1000L);
+    if (startsWith(cmd, "animation=")) {
+        int animId = atoi(cmd + 10);
+        if (isValidAnimIndex(animId)) {
+            player.select(animId, player.currentPalette());
+        }
     } else
-    if (strstr((char*)payload, "brightness=") == (char*)payload) {
-        int bri = atoi((char*)(payload+11));
+    if (startsWith(cmd, "duration=")) {
+        player.holdFor(atol(cmd + 9) * 1000L);
+    } else
+    if (startsWith(cmd, "brightness=")) {
+        int bri = atoi(cmd + 11);
         if (bri >= 0 && bri <= 255) {
-            currentConfig.brightness = bri;
+            player.setBrightness(bri);
         }
     } else
-    if (strstr((char*)payload, "brightness up") == (char*)payload) {
-        if (currentConfig.brightness) {
-            currentConfig.brightness *= 2;
-            if (currentConfig.brightness > 255) {
-                currentConfig.brightness = 255;
-            }
-        } else {
-            currentConfig.brightness = 1;
-        }
-        Serial.printf("BRI=%d\n", currentConfig.brightness);
+    if (startsWith(cmd, "brightness up")) {
+        int bri = settings.brightness;
+        bri = bri ? bri * 2 : 1;
+        player.setBrightness(bri > 255 ? 255 : bri);
+        Serial.printf("BRI=%d\n", settings.brightness);
     } else
-    if (strstr((char*)payload, "brightness down") == (char*)payload) {
-        currentConfig.brightness /= 2;
-        Serial.printf("BRI=%d\n", currentConfig.brightness);
+    if (startsWith(cmd, "brightness down")) {
+        player.setBrightness(settings.brightness / 2);
+        Serial.printf("BRI=%d\n", settings.brightness);
     }
     else {
-        Serial.printf("MQTT command unknown: length=%d, payload=%s\r\n", length, payload);
+        Serial.printf("MQTT command unknown: length=%d, payload=%s\r\n", length, cmd);
     }
 }
 
@@ -68,11 +78,11 @@ void mqttReconnect() {
     lastConnAttemptMs = millis();
 
     Serial.printf("Attempting MQTT connection to %s:%d, login=%s...",
-        currentConfig.mqttHost.c_str(), currentConfig.mqttPort, currentConfig.mqttLogin.c_str());
+        settings.mqttHost.c_str(), settings.mqttPort, settings.mqttLogin.c_str());
 
-    if (pubSubClient.connect(currentConfig.mqttClientId.c_str(), currentConfig.mqttLogin.c_str(), currentConfig.mqttPass.c_str())) {
+    if (pubSubClient.connect(settings.mqttClientId.c_str(), settings.mqttLogin.c_str(), settings.mqttPass.c_str())) {
         Serial.println(F("connected"));
-        pubSubClient.subscribe(currentConfig.mqttTopic.c_str());
+        pubSubClient.subscribe(settings.mqttTopic.c_str());
     } else {
         Serial.print(F("failed, rc="));
         Serial.println(pubSubClient.state());
@@ -80,18 +90,17 @@ void mqttReconnect() {
 }
 
 void mqttSetup() {
-    if (currentConfig.mqttHost.length() > 0) {
-        strcpy(mqttHost, currentConfig.mqttHost.c_str());
-        pubSubClient.setServer(mqttHost, currentConfig.mqttPort);
+    if (settings.mqttHost.length() > 0) {
+        strlcpy(mqttHost, settings.mqttHost.c_str(), sizeof(mqttHost));
+        pubSubClient.setServer(mqttHost, settings.mqttPort);
         pubSubClient.setCallback(mqttCallback);
-    } else {
     }
 }
 
 void mqttRun() {
-    if (currentConfig.mqttHost.length() > 0) {
+    if (settings.mqttHost.length() > 0) {
         if (WiFi.status() == WL_CONNECTED && !pubSubClient.loop()) {
             mqttReconnect();
-        } 
+        }
     }
 }

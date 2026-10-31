@@ -1,4 +1,5 @@
 #include "effects.h"
+#include "settings.h"
 #include "ota.h"
 
 // Green progress bar of a firmware update.
@@ -12,7 +13,7 @@ public:
 
     void run() override {
         int countLed = ledsNum * otaProgress / 100;
-        int BRIGHTNESS = currentConfig.brightness;
+        int BRIGHTNESS = settings.brightness;
         int startIndex = countLed - 2;
         if (startIndex < 0){
             startIndex = 0;
