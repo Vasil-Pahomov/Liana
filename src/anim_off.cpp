@@ -1,13 +1,16 @@
-#include "anim.h"
-#include "color.h"
-#include "palette.h"
+#include "effects.h"
 
-
-void Anim::animOff_SetUp() {
-    for (int i=0;i<ledsNum;i++) {
-        leds[i] = Color(0,0,0);
+// All LEDs off. The crossfade in the engine makes the strip fade to black.
+class EffectOff : public Effect {
+public:
+    void setUp() override {
+        for (int i=0;i<ledsNum;i++) {
+            leds[i] = Color(0,0,0);
+        }
     }
-}
 
-void Anim::animOff_Run() {
-}
+    void run() override {
+    }
+};
+
+Effect* createEffectOff() { return new EffectOff(); }

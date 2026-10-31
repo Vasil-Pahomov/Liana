@@ -1,21 +1,21 @@
-#include "anim.h"
+#include "effects.h"
 
 typedef signed char         sint8_t;
 
-void Anim::glowSetUp()
+void Glow::setUp()
 {
-    braPhaseSpd = random(8,13);
-    braFreq = random(40,120);
+    phaseSpd = random(8,13);
+    freq = random(40,120);
 }
 
-void Anim::glowForEachLed(int i)
+Color Glow::apply(Color c, int i) const
 {
-    int bra = (sint8_t) (braPhase + i * braFreq);
+    int bra = (sint8_t) (phase + i * freq);
     bra = BRA_OFFSET + (abs(bra) >> BRA_AMP_SHIFT);
-    leds[i] = leds[i].brightness((int)bra);
+    return c.brightness((int)bra);
 }
 
-void Anim::glowRun()
+void Glow::advance()
 {
-    braPhase += braPhaseSpd;
+    phase += phaseSpd;
 }

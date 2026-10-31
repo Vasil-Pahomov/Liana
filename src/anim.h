@@ -1,135 +1,50 @@
 #ifndef anim_h
 #define anim_h
 #include "palette.h"
-
 #include "config.h"
+#include "effects.h"
 
-//TODO: it's better to hide these variables and make functions that accepts appropriate arguments 
+//TODO: it's better to hide these variables and make functions that accepts appropriate arguments
 extern int paletteInd;
 extern int animInd;
 
+// Animation engine: owns the LED buffers, runs the current effect (and the outgoing one while
+// crossfading), applies gamma and brightness and pushes the frame to the strip.
 class Anim {
-    
-private:
-    bool initialized;
-
-    int ledsNum;//actual number of LEDs
-    
-
-    //Color arrays - two for making transition
-    static Color leds1[MAXLEDS];
-    static Color leds2[MAXLEDS];
-    //auxiliary colors array
-    static Color ledstmp[MAXLEDS];
-
-    void animStart();
-    
-    // length of animation timeslot (period)
-    byte period;
-    // array of Color to work with
-    Color *leds;
-    Palette *palette;
-
-    // millis for next timeslot 
-    unsigned long nextms;
-    // millis to transition end
-    unsigned long transms;
-
-    //animation-specific variables
-    int phase;
-    int pos;
-    int inc;
-
-    //whether to call SetUp on palette change
-    //(some animations require full transition with fade, otherwise the colors would change in a step, some not)
-    bool setUpOnPalChange;
-
-    //height translation table (used by some effects to linarly align data across NY tree assuming it's conic)
-    byte * heightTransTable;
-
-    Color curColor = Color(0);
-    Color prevColor = Color(0);
-
-    Color sparkleColor = Color(0xFFFFFF);
-
-    static int seq[MAXLEDS];
-
-    //brigthness animation (BrA) current initial phase
-    byte braPhase;
-    //braPhase change speed 
-    byte braPhaseSpd=5;
-    //BrA frequency (spatial)
-    byte braFreq=150;
-
-    //glow animation setup
-    void glowSetUp();
-
-    //glow animation - must be called for each LED after it's BASIC color is set
-    //note this overwrites the LED color, so the glow assumes that color will be stored elsewhere (not in leds[])
-    //or computed each time regardless previous leds[] value
-    void glowForEachLed(int i);
-    
-    //glow animation - must be called at the end of each animaton run
-    void glowRun();
-
-    void setUp();
-
-    //run and setup handlers
-    void (Anim::*runImpl)();
-    void (Anim::*setUpImpl)();
-
-
-    //animation implementations
-    void animOff_SetUp();
-    void animOff_Run();
-
-    
-    void animStart_SetUp();
-    void animStart_Run();
-
-    void animRun_SetUp();
-    void animRun_Run();
-    
-    void animPixieDust_SetUp();
-    void animPixieDust_Run();
-    
-    void animSparkr_SetUp();
-    void animSparkr_Run();
-
-    void animRandCyc_SetUp();
-    void animRandCyc_Run();
-
-    void animStars_SetUp();
-    void animStars_Run();
-
-    void animSpread_SetUp();
-    void animSpread_Run();
-
-    void animFly_SetUp();
-    void animFly_Run();
-
-    void animPulse_SetUp();
-    void animPulse_Run();
-
-    void animStatic_SetUp();
-    void animStatic_Run();
-
-    void animMagic_SetUp();
-    void animMagic_Run();
-
-    void animOTA_SetUp();
-    void animOTA_Run();
 public:
+    // allocates buffers for currentConfig.leds LEDs and initialises the strip; call once after the config is loaded
+    void begin();
 
+    // starts the effect with the given palette; the previous effect keeps running and fades out over TRANSITION_MS
+    void select(int effectId, int palInd);
 
-    Anim();
-    void setPeriod(byte period);
-    void setPalette(int palind);
-    void setAnim(byte animInd);
+    // changes the palette of the running effect, restarting it with a crossfade if the effect requires that
+    void setPalette(int palInd);
+
+    // renders one frame once FRAME_MS has elapsed since the previous one
     void run();
-    void doSetUp();
-    void setMagicParams(byte ind, byte position, byte color, boolean isBoom);
 
+    // input for the "magic" effect; ignored when it is not the current effect
+    void setMagicParams(byte ind, byte position, byte color, bool isBoom);
+
+private:
+    struct Slot {
+        Effect* effect = nullptr;
+        const EffectInfo* info = nullptr;
+        EffectContext ctx;
+    };
+
+    Slot slots[2];
+    int cur = 0;                  // slots[cur] is the current effect, slots[1-cur] the outgoing one
+    int ledsNum = 0;
+    bool initialized = false;
+    byte* heightTable = nullptr;
+
+    unsigned long nextFrameMs = 0;
+    unsigned long transEndMs = 0; // when the current crossfade ends
+    bool transitioning = false;
+
+    void dropEffect(Slot& s);
 };
 
 extern Anim anim;

@@ -89,11 +89,9 @@ void setup() {
   tz.setPosix(F(TIMEZONE_POSIX));
 
   randomSeed(analogRead(0)*analogRead(1));
-  anim.setAnim(animInd);
-  anim.setPeriod(20);
+  anim.begin();
   while (!currentConfig.isPalEnabled(paletteInd) && paletteInd < PALS-1) { paletteInd++; };
-  anim.setPalette(paletteInd);
-  anim.doSetUp();
+  setAnimPal();
 
   otaSetUp();
   

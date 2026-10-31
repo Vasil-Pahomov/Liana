@@ -1,6 +1,4 @@
-#include "anim.h"
-#include "color.h"
-#include "palette.h"
+#include "effects.h"
 #include "math.h"
 
 #define PULSE_LENGTH 100
@@ -116,55 +114,56 @@ const int PULSE_DATA[PULSE_LENGTH] = {
 2
 };
 
-//seq[] keeps phases of pulses for corresponding led (which is the center of the pulse); value equal to PULSE_LENGTH means no pulse here
-//ledstmp[] keeps color of corresponding pulse
-void Anim::animPulse_SetUp() {
-    Serial.print(F("(pulse)"));
-    //inc is (average) interval between appearance of new pulses
-    inc = 10 - ledsNum / 20;
-    if (inc < 0) inc=0;
+// Damped oscillations spreading from random points (PULSE_DATA is the sampled waveform).
+// seq[] keeps phases of pulses for corresponding led (which is the center of the pulse); value equal to PULSE_LENGTH means no pulse here
+// ledstmp[] keeps color of corresponding pulse
+class EffectPulse : public Effect {
+    int inc = 0; // (average) interval between appearance of new pulses
 
-    //reset all phases
-    for (int i=0; i<ledsNum; i++) {
-      seq[i] = PULSE_LENGTH;
-    }
-    //seq[100] = 0;
-    //ledstmp[100] = Color(255,255,255);
-}
+public:
+    void setUp() override {
+        inc = 10 - ledsNum / 20;
+        if (inc < 0) inc=0;
 
-void Anim::animPulse_Run() {
-    for (int i=0;i<ledsNum;i++) {
-      leds[i].r = 0;
-      leds[i].g = 0;
-      leds[i].b = 0;
+        //reset all phases
+        for (int i=0; i<ledsNum; i++) {
+          seq[i] = PULSE_LENGTH;
+        }
     }
-    
-    for (int p0=0;p0<ledsNum;p0++) {
-      if (seq[p0] < PULSE_LENGTH) {
-        int pd = 255+PULSE_DATA[seq[p0]];
-        int p = p0 + floor(pd * PULSE_WIDTH / 256) - 1;
-        int d = (pd * PULSE_WIDTH) % 256;
-        //Serial.printf("%3d,%3d,%3d,%3d ... ", seq[p0], pd, p, d);
-        for (int j=0;j<PULSE_DOT_WIDTH+1;j++) {
-          int b = p + j - PULSE_DOT_WIDTH / 2;
-          if (b>=0 && b < ledsNum) {
-            Color col1 = ledstmp[p0].brightness(PULSE_DOT[j]);
-            Color col2 = ledstmp[p0].brightness(PULSE_DOT[j+1]);
-            Color colr = col1.interpolate(col2, (255-d)/255.0).brightness((PULSE_LENGTH - seq[p0]) * 255 / PULSE_LENGTH);
-            leds[b].addSaturate(colr);
-            //Serial.printf("%3d:%3d+%3d=%3d   ", b, col1.r, col2.r, leds[b].r);
+
+    void run() override {
+        for (int i=0;i<ledsNum;i++) {
+          leds[i].r = 0;
+          leds[i].g = 0;
+          leds[i].b = 0;
+        }
+        
+        for (int p0=0;p0<ledsNum;p0++) {
+          if (seq[p0] < PULSE_LENGTH) {
+            int pd = 255+PULSE_DATA[seq[p0]];
+            int p = p0 + floor(pd * PULSE_WIDTH / 256) - 1;
+            int d = (pd * PULSE_WIDTH) % 256;
+            for (int j=0;j<PULSE_DOT_WIDTH+1;j++) {
+              int b = p + j - PULSE_DOT_WIDTH / 2;
+              if (b>=0 && b < ledsNum) {
+                Color col1 = ledstmp[p0].brightness(PULSE_DOT[j]);
+                Color col2 = ledstmp[p0].brightness(PULSE_DOT[j+1]);
+                Color colr = col1.interpolate(col2, (255-d)/255.0).brightness((PULSE_LENGTH - seq[p0]) * 255 / PULSE_LENGTH);
+                leds[b].addSaturate(colr);
+              }
+            }
+            seq[p0]++;
           }
         }
-        //Serial.printf("%4d%4d%4d%4d%4d%4d%4d\n",leds[97].r,leds[98].r,leds[99].r,leds[100].r,leds[101].r,leds[102].r,leds[103].r);
-        seq[p0]++;
-      }
-    }
 
-    if (random(inc) == 0) {
-        int pos = PULSE_WIDTH + random(ledsNum-2*PULSE_WIDTH);
-        if (seq[pos] == PULSE_LENGTH) {
-            seq[pos] = 0;
-            ledstmp[pos] = palette->getPalColor((float)rngb()/256);
+        if (random(inc) == 0) {
+            int pos = PULSE_WIDTH + random(ledsNum-2*PULSE_WIDTH);
+            if (seq[pos] == PULSE_LENGTH) {
+                seq[pos] = 0;
+                ledstmp[pos] = palette->getPalColor((float)rngb()/256);
+            }
         }
     }
-}
+};
+
+Effect* createEffectPulse() { return new EffectPulse(); }

@@ -4,14 +4,14 @@
 #include "anim.h"
 #include "brightness.h"
 #include "config.h"
-#include "NeoPixelWrapper.cpp"
+#include "NeoPixelWrapper.h"
 #include "math.h"
 #include "hw_led.h"
 #include "timeutil.h"
 
 NeoPixelWrapper * strip;
 
-Anim anim = Anim();
+Anim anim;
 
 //TODO: hide inside the class, don't expose
 int paletteInd = 0;
@@ -22,182 +22,143 @@ extern unsigned long millisec;
 
 Palette * pals[PALS] = {&PalRgb, &PalRainbow, &PalRainbowStripe, &PalParty, &PalHeat, &PalFire, &PalIceBlue, &PalXMas, &PalNY, &PalBLR, &PalUA};
 
-Anim::Anim() 
+// gamma correction (BRI table) and global brightness
+static inline RgbColor toStripColor(const Color& c, int brightness) {
+    byte r = (int)pgm_read_byte_near(BRI + c.r) * brightness / 256;
+    byte g = (int)pgm_read_byte_near(BRI + c.g) * brightness / 256;
+    byte b = (int)pgm_read_byte_near(BRI + c.b) * brightness / 256;
+    return RgbColor(r, g, b);
+}
+
+void Anim::begin()
 {
-    nextms = millis();
+    if (initialized) return;
+    ledsNum = currentConfig.leds;
+
+    // height translation table (used by some effects to linearly align data across a NY tree assuming it's conic)
+    heightTable = new byte[ledsNum];
+    for (int i = 0; i < ledsNum; i++) {
+        heightTable[i] = (byte)floorf(255.0 * (1.0 - sqrtf(1.0 - (float)i / (float)ledsNum)));
+    }
+
+    for (int s = 0; s < 2; s++) {
+        EffectContext& ctx = slots[s].ctx;
+        ctx.leds = new Color[ledsNum];
+        ctx.tmp = new Color[ledsNum];
+        ctx.seq = new int[ledsNum]();
+        ctx.ledsNum = ledsNum;
+        ctx.palette = pals[0];
+        ctx.heightTable = heightTable;
+    }
+
+    strip = new NeoPixelWrapper();
+    strip->Begin(currentConfig.neofeature, ledsNum, LED_PIN);
+
+    nextFrameMs = millis();
+    initialized = true;
 }
 
-void Anim::setPeriod(byte period) {
-    this->period = period;
+void Anim::dropEffect(Slot& s)
+{
+    delete s.effect;
+    s.effect = nullptr;
+    s.info = nullptr;
 }
 
-void Anim::setPalette(int palind) {
-    this->palette = pals[palind];
-    if (setUpOnPalChange) {
-        setUp();
+void Anim::select(int effectId, int palInd)
+{
+    if (!initialized) return;
+    const EffectInfo* info = findEffect(effectId);
+    if (info == nullptr) info = findEffect(ANIMATION_OFF_INDEX);
+    if (palInd < 0 || palInd >= PALS) palInd = 0;
+
+    // the outgoing slot may still hold an effect from an unfinished crossfade; it's dropped,
+    // then the current effect becomes the outgoing one and the new effect takes the freed slot
+    dropEffect(slots[1 - cur]);
+    cur = 1 - cur;
+
+    Slot& s = slots[cur];
+    s.info = info;
+    s.ctx.palette = pals[palInd];
+    for (int i = 0; i < ledsNum; i++) {
+        s.ctx.leds[i] = Color(0);
+    }
+    s.effect = info->create();
+    s.effect->attach(s.ctx);
+    s.effect->setUp();
+
+    transitioning = (slots[1 - cur].effect != nullptr);
+    transEndMs = millis() + TRANSITION_MS;
+
+    if (effectId == ANIMATION_OFF_INDEX) {
+        ledTurnOff();
+    } else {
+        ledTurnOn();
+    }
+    Serial.print('('); Serial.print(info->name); Serial.print(')');
+}
+
+void Anim::setPalette(int palInd)
+{
+    if (palInd < 0 || palInd >= PALS) return;
+    Slot& s = slots[cur];
+    if (s.effect == nullptr) return;
+    if (s.info->restartOnPaletteChange) {
+        select(s.info->id, palInd);
+    } else {
+        s.ctx.palette = pals[palInd];
+        s.effect->setPalette(pals[palInd]);
     }
 }
 
 void Anim::run()
-{    
-    if (!timeReached(nextms)) {
+{
+    if (!initialized || !timeReached(nextFrameMs)) {
         return;
     }
-  
-    nextms=millis() + period;
-    
-    if (runImpl != NULL)
-    {
-        (this->*runImpl)();
+    nextFrameMs = millis() + FRAME_MS;
+
+    Slot& c = slots[cur];
+    Slot& o = slots[1 - cur];
+
+    if (c.effect != nullptr) {
+        c.effect->run();
     }
 
-    //transition coef, if within 0..1 - transition is active
-    //changes from 1 to 0 during transition, so we interpolate from current color to previous
-    float transc = (float)(long)(transms - millis()) / TRANSITION_MS;
-    Color * leds_prev = (leds == leds1) ? leds2 : leds1;
-    int BRIGHTNESS = currentConfig.brightness;
-    if (transc > 0) {
-        for(int i=0; i<ledsNum; i++) {
-            //transition is in progress
-            Color c = leds[i].interpolate(leds_prev[i], transc);
-            byte r = (int)pgm_read_byte_near(BRI + c.r) * BRIGHTNESS / 256;
-            byte g = (int)pgm_read_byte_near(BRI + c.g) * BRIGHTNESS / 256;
-            byte b = (int)pgm_read_byte_near(BRI + c.b) * BRIGHTNESS / 256;
-            strip->SetPixelColor(i, RgbColor(r, g, b));
-        }
-    } else {
-        for(int i=0; i<ledsNum; i++) {
-            //regular operation
-            byte r = (int)pgm_read_byte_near(BRI + leds[i].r) * BRIGHTNESS / 256;
-            byte g = (int)pgm_read_byte_near(BRI + leds[i].g) * BRIGHTNESS / 256;
-            byte b = (int)pgm_read_byte_near(BRI + leds[i].b) * BRIGHTNESS / 256;
-            strip->SetPixelColor(i, RgbColor(r, g, b));
+    // crossfade coefficient: 1 at the start of a transition, 0 at its end
+    float mix = 0;
+    if (transitioning) {
+        mix = (float)(long)(transEndMs - millis()) / TRANSITION_MS;
+        if (mix <= 0 || o.effect == nullptr) {
+            transitioning = false;
+            dropEffect(o);
+            mix = 0;
         }
     }
-  
+
+    int brightness = currentConfig.brightness;
+    if (mix > 0) {
+        // the outgoing effect keeps animating while it fades out
+        o.effect->run();
+        for (int i = 0; i < ledsNum; i++) {
+            Color col = c.ctx.leds[i].interpolate(o.ctx.leds[i], mix);
+            strip->SetPixelColor(i, toStripColor(col, brightness));
+        }
+    } else {
+        for (int i = 0; i < ledsNum; i++) {
+            strip->SetPixelColor(i, toStripColor(c.ctx.leds[i], brightness));
+        }
+    }
+
     strip->Show();
 }
 
-void Anim::setUp()
+void Anim::setMagicParams(byte ind, byte position, byte color, bool isBoom)
 {
-    if (!heightTransTable) {
-        heightTransTable = (byte*)malloc(ledsNum);
-      for (int i=0;i<ledsNum;i++) {
-        heightTransTable[i] = (byte)floorf(255.0*(1.0-sqrtf(1.0-(float)i/(float)ledsNum)));
-      }
+    Slot& s = slots[cur];
+    if (s.effect != nullptr && s.info->id == ANIMATION_MAGIC_INDEX) {
+        static_cast<EffectMagic*>(s.effect)->setParams(ind, position, color, isBoom);
     }
-
-   //pinMode(LED_BUILTIN, OUTPUT);  
-    transms = millis() + TRANSITION_MS;
-
-    //switch operation buffers (for transition to operate)
-    
-    if (leds == leds1) {
-        leds = leds2;
-    } else {
-        leds = leds1;
-    }
-
-    if (setUpImpl != NULL) {
-        (this->*setUpImpl)();
-    }
-}
-
-void Anim::doSetUp()
-{
-  if (!initialized) {
-    currentConfig.configLoad();
-    strip = new NeoPixelWrapper();
-    
-    ledsNum = currentConfig.leds;
-    strip->Begin(currentConfig.neofeature, ledsNum, LED_PIN);
-    initialized = true;
-  }
-  if (!setUpOnPalChange) {
-      setUp();
-  }
-}
-
-void Anim::setAnim(byte animInd)
-{
-    ledTurnOn();
-    switch (animInd) {
-        case 0:
-            setUpImpl = &Anim::animStart_SetUp;
-            runImpl = &Anim::animStart_Run;
-            setUpOnPalChange = true;
-        break;
-        case 1: 
-            setUpImpl = &Anim::animRun_SetUp;
-            runImpl = &Anim::animRun_Run;
-            setUpOnPalChange = true;
-        break;
-        case 2: 
-            setUpImpl = &Anim::animPixieDust_SetUp;
-            runImpl = &Anim::animPixieDust_Run;
-            setUpOnPalChange = true;
-        break;        
-        case 3: 
-            setUpImpl = &Anim::animSparkr_SetUp;
-            runImpl = &Anim::animSparkr_Run;
-            setUpOnPalChange = true;
-        break;        
-        case 4: 
-            setUpImpl = &Anim::animRandCyc_SetUp;
-            runImpl = &Anim::animRandCyc_Run;
-            setUpOnPalChange = true;
-        break;   
-        case 5: 
-            setUpImpl = &Anim::animStars_SetUp;
-            runImpl = &Anim::animStars_Run;
-            setUpOnPalChange = false;
-        break;    
-        case 6: 
-            setUpImpl = &Anim::animSpread_SetUp;
-            runImpl = &Anim::animSpread_Run;
-            setUpOnPalChange = false;
-        break;
-        case 7: 
-            setUpImpl = &Anim::animFly_SetUp;
-            runImpl = &Anim::animFly_Run;
-            setUpOnPalChange = false;
-        break;                                
-        case 8: 
-            setUpImpl = &Anim::animPulse_SetUp;
-            runImpl = &Anim::animPulse_Run;
-            setUpOnPalChange = false;
-        break;                                
-        case 9: 
-            setUpImpl = &Anim::animStatic_SetUp;
-            runImpl = &Anim::animStatic_Run;
-            setUpOnPalChange = false;
-        break;
-        case ANIMATION_MAGIC_INDEX://special "magic" animation
-            setUpImpl = &Anim::animMagic_SetUp;
-            runImpl = &Anim::animMagic_Run;
-            setUpOnPalChange = false;
-        break;
-        case ANIMATION_OTA_INDEX:// OTA
-            setUpImpl = &Anim::animOTA_SetUp;
-            runImpl = &Anim::animOTA_Run;
-            setUpOnPalChange = false;
-        break;
-        default:
-            setUpImpl = &Anim::animOff_SetUp;
-            runImpl = &Anim::animOff_Run;
-            setUpOnPalChange = false;
-            ledTurnOff();
-        break;
-    }
-}
-
-//sets animation and palette to values specified in animInd and paletteInd, 
-//and notifies all WebSocket connections of the change
-void setAnimPal() {
-  anim.setAnim(animInd);
-  anim.setPeriod(random(20, 40));
-  anim.setPalette(paletteInd);
-  anim.doSetUp();
 }
 
 bool isValidAnimIndex(int animIndex)
@@ -205,6 +166,11 @@ bool isValidAnimIndex(int animIndex)
     return (animIndex >= 0 && animIndex < ANIM_COUNT)
         || animIndex == ANIMATION_MAGIC_INDEX
         || animIndex == ANIMATION_OFF_INDEX;
+}
+
+//starts animation and palette specified in animInd and paletteInd (crossfading from the running one)
+void setAnimPal() {
+  anim.select(animInd, paletteInd);
 }
 
 //sets animation and resets "change" time
@@ -228,8 +194,3 @@ void setPalette(int paletteIndex)
 void setDuration(unsigned long durationMs) {
     millisec = millis() + durationMs;
 }
-
-Color Anim::leds1[MAXLEDS];
-Color Anim::leds2[MAXLEDS];
-Color Anim::ledstmp[MAXLEDS];
-int Anim::seq[MAXLEDS];

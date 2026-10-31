@@ -32,7 +32,8 @@
 
 #define MAXLEDS 1024 // maximum number of LEDs in the strip TODO: switch to dynamic arrays to save RAM
 
-#define TRANSITION_MS 1000 // transition time between animations, ms
+#define FRAME_MS 20 // frame period, ms; all effects are tuned to it
+#define TRANSITION_MS 1000 // crossfade time between animations, ms; both animations run during it
 
 // special animation indices (outside 0..ANIM_COUNT-1)
 #define ANIMATION_MAGIC_INDEX 100

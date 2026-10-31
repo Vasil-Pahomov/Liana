@@ -1,3 +1,5 @@
+#ifndef NEOPIXELWRAPPER_H
+#define NEOPIXELWRAPPER_H
 #include <NeoPixelAnimator.h>
 #include <NeoPixelBus.h>
 //https://github.com/Makuna/NeoPixelBus/issues/103
@@ -223,3 +225,5 @@ private:
     }
   }
 };
+
+#endif

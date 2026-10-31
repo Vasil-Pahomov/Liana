@@ -1,32 +1,36 @@
-#include "anim.h"
+#include "effects.h"
 
-void Anim::animStatic_SetUp() {
-    Serial.print(F("(static)"));Serial.print(ledsNum);
-    glowSetUp();
-    inc = random(3)-1;
-}
+// Palette gradient along the "height" of a conic tree, with a glow and random sparks.
+class EffectStatic : public Effect {
+    int inc = 0; // >0 bottom to top smooth, <0 top to bottom smooth, 0 bottom to top hard
+    Glow glow;
 
-
-void Anim::animStatic_Run() {   
-    for (int i=0;i<ledsNum;i++) {
-        if (inc>0) {
-            // bottom to top smooth
-            leds[i] = palette->getPalColor((float)heightTransTable[i]/255.0); 
-        } else if (inc<0) {
-            // top to bottom smooth 
-            leds[i] = palette->getPalColor(1.0-(float)heightTransTable[i]/255.0);
-        } else {
-            // bottom to top hard
-            leds[i] = palette->colors[heightTransTable[i]*palette->numColors/255];
-        }
-        glowForEachLed(i);
+public:
+    void setUp() override {
+        glow.setUp();
+        inc = random(3)-1;
     }
 
-    glowRun();
-    
-    if (random(SPARK_PROB) == 0) {
-        int i = (int)rngb() * ledsNum / 256;
-        leds[i] = sparkleColor;
-    }    
-    
-}
+    void run() override {
+        for (int i=0;i<ledsNum;i++) {
+            Color c;
+            if (inc>0) {
+                c = palette->getPalColor((float)heightTransTable[i]/255.0);
+            } else if (inc<0) {
+                c = palette->getPalColor(1.0-(float)heightTransTable[i]/255.0);
+            } else {
+                c = palette->colors[heightTransTable[i]*palette->numColors/255];
+            }
+            leds[i] = glow.apply(c, i);
+        }
+
+        glow.advance();
+
+        if (random(SPARK_PROB) == 0) {
+            int i = (int)rngb() * ledsNum / 256;
+            leds[i] = sparkleColor;
+        }
+    }
+};
+
+Effect* createEffectStatic() { return new EffectStatic(); }
