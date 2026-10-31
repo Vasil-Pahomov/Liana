@@ -4,12 +4,15 @@
 
 Сборка `pio run -e nodemcuv2` в этом состоянии проходила успешно: RAM 59,2 % (48 524 из 81 920 байт), Flash 40,9 % (427 527 байт).
 
-**Статус на 2026-10-31 (ветка `latest-manual`):**
+**Статус на 2026-10-31 (ветка `latest-manual`): все пять этапов выполнены.**
 
-- Этап 0 (точечные исправления) выполнен, коммит `0c9f037`.
-- Этап 2 (эффекты как классы с единым реестром) выполнен, плюс фиксированный кадр `FRAME_MS` и настоящий кроссфейд, в котором оба эффекта работают одновременно. Разделы 2.2, 3.1, 3.4–3.6 ниже описывают уже новый движок.
+- Этап 0 (точечные исправления): коммит `0c9f037`.
+- Этап 2 (эффекты как классы с единым реестром) плюс фиксированный кадр `FRAME_MS` и настоящий кроссфейд, в котором оба эффекта работают одновременно: коммит `ea717a8`.
+- Этапы 1 и 3 (объект `Player`, структура `Settings` на ArduinoJson 7, `/api/catalog` и `/api/state`, JSON по WebSocket, UI из каталога, свой шаблонизатор вместо EspHtmlTemplateProcessor, тесты на хосте): коммит `aa4726b`.
+- Этап 4 (LittleFS, `platformio_local.ini` для секретов и флагов, GitHub Actions, скрипт гамма-таблицы, README): последний коммит ветки.
 - Попутно починена сборка для ESP32 на Windows: `src/wifi.h` перехватывал `#include <WiFi.h>` на регистронезависимой файловой системе, файлы переименованы в `liana_wifi.*`.
-- Этапы 1, 3 и 4 не начинались. Поведение на железе после правок не проверялось.
+- Не сделано из плана: gzip статики (страницы маленькие, выигрыша на локальной сети нет), переименование остальных общих заголовков (`color.h`, `palette.h`, `mqtt.h`), замена `Brightness.xlsx` формулой (формула воспроизводит таблицу лишь с точностью ±1, таблица оставлена, скрипт `tools/gen_brightness.py` её проверяет).
+- Разделы 2–3 ниже описывают итоговое состояние; раздел 4 — находки на момент анализа, большинство закрыто этапами выше. Поведение на железе не проверялось; UI проверялся в браузере на мок-сервере без WebSocket.
 
 ---
 
@@ -84,15 +87,17 @@ Liana — прошивка для ESP8266/ESP32, которая проигрыв
 | `GET /time` | отладочный вывод текущего времени (незакоммичено) |
 | `/wifi/*` | эндпоинты PersWiFiManager (list, connect, ap, wps, rst) |
 
-**WebSocket (порт 81).** Текстовый протокол, одна буква команды + HEX-параметры:
+**WebSocket (порт 81).** JSON-сообщения (до этапа 3 был текстовый протокол с HEX-полями):
 
 | Направление | Сообщение | Смысл |
 |---|---|---|
-| клиент → ESP | `I` | запросить состояние; заодно продлевает дедлайн автосмены |
-| клиент → ESP | `S` + `AAPP` | выбрать эффект `AA` и палитру `PP` (`FF` в эффекте = выключить) |
-| клиент → ESP | `D` + `A|P` + `D|E` + `n` | отключить/включить эффект или палитру `n` в переборе |
-| клиент → ESP | `P` + `␠|B` + `CCPP` | «Магия»: позиция `PP`, цвет `CC`, `B` = «бум» |
-| ESP → клиент | `I` + `AAPPDDDDPPPP` | состояние: эффект, палитра, маски отключённых эффектов и палитр |
+| клиент → ESP | `{"cmd":"info"}` | запросить состояние; заодно продлевает дедлайн автосмены |
+| клиент → ESP | `{"cmd":"set","anim":N,"pal":N}` | выбрать эффект и палитру (`anim` 255 = выключить) |
+| клиент → ESP | `{"cmd":"enable","kind":"anim"\|"pal","index":N,"enabled":bool}` | включить/исключить из перебора |
+| клиент → ESP | `{"cmd":"point","pos":0..255,"color":0..255,"boom":bool}` | «Магия»: позиция, цвет, «бум» |
+| ESP → клиент | `{"type":"state","anim":N,"pal":N,"on":bool,"disabledAnims":маска,"disabledPals":маска,"brightness":N,"night":bool}` | состояние; рассылается всем при любом изменении |
+
+**HTTP API.** `GET /api/catalog` — эффекты (id, имя, подпись, вид, участвует ли в переборе) и палитры (id, имя, подпись, цвета); `GET /api/state` — то же состояние, что и по WebSocket. `index.htm` строит кнопки из каталога, поэтому список эффектов в прошивке существует в одном месте, `EFFECTS[]`.
 
 **MQTT.** Только клиент, подписка на один топик. Команды в теле сообщения: `on`, `off`, `palette=n`, `animation=n`, `duration=сек`, `brightness=n`, `brightness up`, `brightness down`. Переподключение раз в 10 с.
 
@@ -110,39 +115,45 @@ Liana — прошивка для ESP8266/ESP32, которая проигрыв
 
 | Файл(ы) | Ответственность | Экспортируемое глобальное состояние |
 |---|---|---|
-| `Liana.cpp` | `setup()`/`loop()`, политика автоперебора, ночной режим, генератор случайных чисел `rng()` | `millisec` (дедлайн смены), `tz`, `currTm` |
-| `anim.h/.cpp` | Класс `Anim`: два слота с буферами, кроссфейд, гамма и яркость, вывод на ленту; свободные функции `setAnimation/setPalette/setDuration/setAnimPal` | `anim`, `animInd`, `paletteInd`, `pals[]`, `strip` |
+| `Liana.cpp` | `setup()`/`loop()`: инициализация модулей и вызов их `loop`-функций, генератор случайных чисел `rng()` | `tz` |
+| `player.h/.cpp` | `Player`: текущий эффект и палитра, дедлайн автосмены, случайный перебор, ночной режим, защита «последний не отключить»; единая точка входа для web, WebSocket, MQTT, кнопки и OTA; колбэк `onChange` | `player` |
+| `settings.h/.cpp` | `Settings`: поля с умолчаниями, `validate()`, `load()`/`save()` в JSON (ArduinoJson 7), маски включённых эффектов и палитр | `settings` |
+| `enable_mask.h`, `cycling.h` | Чистые функции масок и случайного выбора, без Arduino; покрыты тестами на хосте | — |
+| `anim.h/.cpp` | Класс `Anim`: два слота с буферами, кроссфейд, гамма и яркость, вывод на ленту | `anim`, `strip` |
+| `api.h/.cpp` | JSON-представления состояния и каталога для HTTP и WebSocket | — |
 | `effects.h/.cpp` | Базовый класс `Effect`, контекст слота `EffectContext`, помощник `Glow`, реестр `EFFECTS[]` (id, имя, фабрика, флаг перезапуска при смене палитры) | `EFFECTS[]` |
 | `anim_*.cpp`, `animGlow.cpp` | Эффекты как классы-наследники `Effect`, по одному на файл, с собственным состоянием; наружу выходит только фабрика | — |
-| `color.h`, `palette.h/.cpp`, `brightness.h` | Тип `Color`, тип `Palette` и 11 палитр, гамма-таблица | палитры |
-| `NeoPixelWrapper.cpp` | Обёртка над шаблоном `NeoPixelBus`, выбор порядка цветов в рантайме | — |
-| `config.h/.cpp` | Константы компиляции + класс `LianaConfig` (load/save JSON, маски) | `currentConfig` |
-| `wifi.h/.cpp` | PersWiFiManager, mDNS, инициализация web и ws | `persWM`, `dnsServer` |
-| `web.h/.cpp` | HTTP-сервер, раздача SPIFFS, шаблонизатор, формы | `webServer` |
-| `websocket.h/.cpp` | WebSocket-сервер, разбор протокола | `webSocket` |
+| `color.h`, `palette.h/.cpp`, `brightness.h` | Тип `Color`, тип `Palette`, реестр `PALETTES[]` (имя, подпись, цвета), гамма-таблица | `PALETTES[]` |
+| `NeoPixelWrapper.h` | Обёртка над шаблоном `NeoPixelBus`, выбор порядка цветов в рантайме | — |
+| `config.h` | Константы компиляции; всё, что зависит от устройства, переопределяется флагами `-D` из `platformio_local.ini` | — |
+| `fs_compat.h` | LittleFS на обеих платформах (`LIANA_FS`, `lianaFsBegin()`) | — |
+| `liana_wifi.h/.cpp` | PersWiFiManager, mDNS, SSID точки доступа `Liana-<chip id>`, инициализация web и ws | `persWM`, `dnsServer` |
+| `web.h/.cpp` | HTTP-сервер, раздача файлов, потоковый шаблонизатор `{{key}}` с экранированием, формы, `/api/*` | `webServer` |
+| `websocket.h/.cpp` | WebSocket-сервер, JSON-команды, рассылка состояния по `player.onChange` | `webSocket` |
 | `mqtt.h/.cpp` | PubSubClient, разбор команд | — |
 | `ota.h/.cpp` | ArduinoOTA, колбэки прогресса | `otaProgress` |
 | `hw_button.*`, `hw_led.*` | Кнопка с антидребезгом, индикаторный светодиод | — |
-| `tests.cpp` | Ручные «тесты» масок с выводом в Serial (вызов закомментирован) | — |
-| `data/` | `index.htm` (UI + весь JS inline), `setup/wifi/mqtt/ota.htm`, `s.css`, `config.json` | — |
+| `test/test_native/` | 16 тестов на хосте (Unity, `pio test -e native`): `Color`, `Palette`, маски, выбор эффекта | — |
+| `tools/gen_brightness.py` | Проверка (и при желании генерация) гамма-таблицы по формуле | — |
+| `data/` | `index.htm` (каркас), `main.js` (строит UI из `/api/catalog`, JSON по WebSocket), `setup/wifi/mqtt/ota.htm`, `s.css`, `config.json` | — |
 
 ### 3.2 Зависимости между модулями
 
 ```
-Liana.cpp ──► anim ──► palette ──► color
-   │           │  └──► NeoPixelWrapper ──► NeoPixelBus
-   │           └──► config, hw_led
-   ├──► wifi ──► web ──► config, ota, (ezTime: tz, currTm из Liana.cpp)
-   │       └──► websocket ──► anim, config, (millisec из Liana.cpp)
-   ├──► mqtt ──► anim, config
-   ├──► ota ──► anim
-   └──► hw_button ──► anim, config
+Liana.cpp ──► player ──► anim ──► effects ──► palette ──► color
+   │             │        │  └──► NeoPixelWrapper ──► NeoPixelBus
+   │             │        └──► settings, hw_led
+   │             └──► settings, cycling, enable_mask, (ezTime: tz из Liana.cpp)
+   ├──► liana_wifi ──► web ──► settings, api, ota
+   │             └──► websocket ──► player, anim (magic), api
+   ├──► mqtt ──► player, settings
+   ├──► ota ──► player, anim
+   └──► hw_button ──► player
 
-Обратные связи через extern: anim.cpp и websocket.cpp пишут в millisec (Liana.cpp);
-web.cpp читает tz/currTm (Liana.cpp); Liana.cpp напрямую правит animInd/paletteInd (anim.cpp).
+api ──► player, effects, palette
 ```
 
-Граф в целом слоистый (приложение → сервисы → движок эффектов → драйвер), но три переменные (`animInd`, `paletteInd`, `millisec`) и объект `currentConfig` читаются и пишутся из пяти модулей напрямую. Автор это знает: в коде три комментария `TODO: it's bad thing to reference that var here`.
+Граф слоистый: приложение → `Player` → движок → эффекты → драйвер. Состояние «что играет» есть только в `Player`, настройки — только в `settings`; сетевые модули ничего не пишут напрямую. Единственная обратная связь — колбэк `player.onChange`, которым WebSocket рассылает состояние. Глобальные `animInd`, `paletteInd`, `millisec` и комментарии `TODO: it's bad thing to reference that var here` исчезли.
 
 ### 3.3 Поток выполнения
 
@@ -150,18 +161,17 @@ web.cpp читает tz/currTm (Liana.cpp); Liana.cpp напрямую прав�
 
 ```
 setup():
-  Serial, SPIFFS, configLoad
-  wifiSetUp  → persWM.begin (неблокирующий), MDNS, webSetup, wsSetup
+  Serial, LittleFS, settings.load()
+  wifiSetUp  → persWM.begin (неблокирующий), MDNS, webSetup, wsSetup (подписка на player.onChange)
   mqttSetup
-  tz.setLocation("Europe/Warsaw")        ← до подключения WiFi
-  anim.setAnim(0); setPeriod; setPalette; doSetUp (configLoad ещё раз, new NeoPixelWrapper, Begin)
+  tz.setPosix(TIMEZONE_POSIX)             ← без сети
+  anim.begin()                            ← буферы под settings.leds, NeoPixelWrapper
+  player.begin()                          ← стартовый эффект, первая включённая палитра
   otaSetUp, ledSetUp, buttonsSetUp
 
 loop():
-  anim.run()                              ← кадр, если прошёл период
-  if millis() > millisec и не выключено:  ← автоперебор + ночной режим
-      выбрать: сменить эффект или палитру
-      ...
+  anim.run()                              ← кадр раз в FRAME_MS
+  player.tick()                           ← по дедлайну: ночной режим, затем смена эффекта или палитры
   wifiLoop  → persWM.handleWiFi, webServer.handleClient, webSocket.loop, dnsServer
   mqttRun, otaLoop, events() [ezTime], buttonsLoop
 ```
@@ -206,7 +216,7 @@ strip->Show()  (UART1 на ESP8266 / RMT на ESP32)
 
 ## 4. Найденные проблемы
 
-Отсортированы по важности. Всё ниже установлено чтением кода; что проверено сборкой, отмечено отдельно.
+Раздел описывает состояние на момент анализа, до рефакторинга; что закрыто, перечислено в статусе в начале документа. Отсортированы по важности. Всё ниже установлено чтением кода; что проверено сборкой, отмечено отдельно.
 
 ### 4.1 Ошибки
 
@@ -283,7 +293,9 @@ strip->Show()  (UART1 на ESP8266 / RMT на ESP32)
 7. Проверка диапазонов в `wsSet`, `wsSetDisabled`, `webOnSetup`; экранирование в `indexKeyProcessor`; не отдавать `/config.json` по HTTP (проверка пути в `webFileRead`); убрать пароль из Serial.
 8. Починить `config.json`, убрать мёртвый `<link>`, вынести `start()` только в `setup.htm`.
 
-### Этап 1. Собрать состояние в один объект: `Player`
+### Этап 1. Собрать состояние в один объект: `Player` — выполнен
+
+Реализовано как ниже, с одним дополнением: автоперебор не запускается во время OTA (раньше мог сменить индикатор прогресса на случайный эффект). Условная компиляция `USE_START_ANIMATION` и `USE_STATIC_BRB_AFTER_START` удалена как мёртвый код.
 
 Цель: убрать `extern animInd/paletteInd/millisec` и дублирование логики смены.
 
@@ -331,14 +343,18 @@ extern const EffectInfo EFFECTS[];  // единственный источник
 
 Каждый эффект хранит собственные поля (`phase`, `inc`, `curColor`) у себя, а не в общих `Anim::phase/pos/inc`. `Anim` остаётся владельцем буферов, переходов, гаммы и яркости, но вместо `switch` берёт `Effect*` из реестра. Аналогично палитры: `struct PaletteInfo { const char* name; const Palette* pal; }`. Количества выводятся из размера массивов, константы `ANIMS`/`PALS` исчезают. Виртуальные вызовы раз в 20 мс на ESP8266 ничего не стоят.
 
-### Этап 3. Один источник правды для UI
+### Этап 3. Один источник правды для UI — выполнен
+
+Сделано всё, кроме gzip статики. Шаблонизатор написан свой (потоковый, с экранированием), библиотека EspHtmlTemplateProcessor удалена — это заодно сняло её привязку к SPIFFS. На странице «Лента» появились настройки ночного режима.
 
 - `GET /api/catalog` → JSON со списком эффектов и палитр (id, имя, опорные цвета палитры), `GET /api/state`. `index.htm` строит кнопки и градиенты из каталога. Исчезают ручные правки HTML при добавлении эффекта.
 - WebSocket-протокол можно оставить текстовым (он компактен и работает), но стоит перейти на JSON-сообщения, чтобы расширять без разбора позиций символов.
 - JS вынести в `main.js`, страницы отдавать gzip (раскомментированная ветка в `webFileRead`).
 - Класс конфигурации заменить на `struct Settings` с явными умолчаниями и методом `validate()`; хранить только значения, не `DynamicJsonDocument`; перейти на ArduinoJson 7.
 
-### Этап 4. Платформа и гигиена
+### Этап 4. Платформа и гигиена — выполнен
+
+LittleFS на обеих платформах (образ `littlefs.bin`, README обновлён), `platformio_local.ini` через `extra_configs` для паролей, адресов OTA и флагов (`platformio_local.ini.example` в репозитории), GitHub Actions с матрицей nodemcuv2/d1_mini/esp32dev, вариантом с кнопкой и тестами на хосте, 16 тестов в `test/test_native`, `tools/gen_brightness.py`. Динамические буферы сделаны ещё на этапе 2. Не сделано: переименование остальных общих заголовков и удаление `Brightness.xlsx` (см. статус в начале).
 
 - **LittleFS вместо SPIFFS** на обеих платформах. Это меняет образ ФС и инструкцию прошивки из README (адрес `0x100000`), поэтому делать отдельным релизом с заметкой для пользователей.
 - **Динамические буферы:** один `malloc` на `ledsNum` при инициализации вместо `MAXLEDS` статики. Освобождает до ~13 КБ RAM при типичной гирлянде.
@@ -367,3 +383,11 @@ extern const EffectInfo EFFECTS[];  // единственный источник
 - `pio run -e nodemcuv2` с `-DSUPPORT_BUTTON=1`: успех.
 - `pio run -e esp32dev`: успех, RAM 16,0 %, Flash 72,1 %.
 - esp01s не собирался: 427 КБ прошивки близко к пределу раскладки `eagle.flash.512k64.ld`, стоит проверить отдельно. На железе ничего не проверялось.
+
+После всех этапов (ветка `latest-manual`):
+
+- `pio run -e nodemcuv2`: успех, RAM 44,3 % (36 324 байта), Flash 41,6 %; `-t buildfs` даёт `littlefs.bin`.
+- `pio run -e nodemcuv2` с `-DSUPPORT_BUTTON=1 -DSUPPORT_LED_ON_OFF=1`: успех.
+- `pio run -e esp32dev`: успех, образ LittleFS собирается.
+- `pio test -e native`: 16 из 16 тестов проходят (компилятор Cygwin gcc).
+- UI проверен в браузере на мок-сервере: списки строятся из каталога, состояние применяется, страница настроек подставляет значения. WebSocket-обмен и работа на ленте не проверялись.

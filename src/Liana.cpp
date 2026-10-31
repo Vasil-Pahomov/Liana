@@ -35,7 +35,7 @@ void setup() {
   Serial.begin(115200);
 
   Serial.println("Entering setup");
-  if (LIANA_FS.begin()) {
+  if (lianaFsBegin()) {
     Serial.println("File system started");
   } else {
     Serial.println("File system FAILED");

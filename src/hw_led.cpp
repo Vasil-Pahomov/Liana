@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include "hw_led.h"
 #include "config.h"
 

@@ -1,0 +1,38 @@
+; Device-specific settings. Copy this file to platformio_local.ini (it is ignored by git);
+; platformio.ini picks it up through extra_configs.
+
+; Feature flags and overrides of config.h for all boards. Examples:
+;   -DSUPPORT_BUTTON=1 -DBUTTON_ON_OFF_PIN=21   on/off button
+;   -DSUPPORT_LED_ON_OFF=1 -DLED_ON_OFF_PIN=2    indicator LED
+;   -DLED_PIN=4                                  strip data pin
+;   -DWIFI_AP_SSID=\"Liana\"                     fixed setup AP name instead of Liana-<chip id>
+;   -DOTA_PASSWORD=\"secret\"                    OTA password (default is in src/ota.h)
+;   -DNIGHT_MODE_ENABLED=0                       night mode off unless enabled in config.json
+[esp]
+build_flags =
+	-DOTA_PASSWORD=\"123OtA!_456\"
+
+; Over-the-air upload targets. Press "OTA" in the web interface first, the strip shows the progress.
+[env:nodemcuv2_ota]
+extends = env:nodemcuv2
+upload_protocol = espota
+upload_port = 192.168.0.31
+upload_flags =
+	--auth=123OtA!_456
+	--port=8266
+
+[env:d1_mini_ota]
+extends = env:d1_mini
+upload_protocol = espota
+upload_port = 192.168.4.1
+upload_flags =
+	--auth=123OtA!_456
+	--port=8266
+
+[env:esp32dev_ota]
+extends = env:esp32dev
+upload_protocol = espota
+upload_port = 192.168.50.161
+upload_flags =
+	--auth=123OtA!_456
+	--port=8266
