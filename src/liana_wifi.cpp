@@ -18,21 +18,34 @@ DNSServer dnsServer;
 PersWiFiManager persWM(webServer, dnsServer);
 bool _wifiConnected = false;
 
-//SSID of the setup access point: the configured one, or "Liana-" + chip id so that several units don't clash
+//last 3 bytes of the factory station MAC, in the order they are printed (AA:BB:CC:A1:B2:C3 -> A1B2C3);
+//read from the chip, so it is available before WiFi is started
+String deviceSuffix()
+{
+#if defined(ESP8266)
+  uint32_t id = ESP.getChipId() & 0xFFFFFF; // already MAC[3..5] as one big-endian number
+#else
+  uint64_t mac = ESP.getEfuseMac();       // MAC[0] is the lowest byte
+  uint32_t id = ((uint32_t)((mac >> 24) & 0xFF) << 16) |
+                ((uint32_t)((mac >> 32) & 0xFF) << 8) |
+                 (uint32_t)((mac >> 40) & 0xFF);
+#endif
+  char buf[8];
+  snprintf(buf, sizeof(buf), "%06X", (unsigned)id);
+  return String(buf);
+}
+
+String deviceHostName()
+{
+  String name = String(MDNS_NAME) + "-" + deviceSuffix();
+  name.toLowerCase();
+  return name;
+}
+
+//SSID of the setup access point: WIFI_AP_SSID + "-" + suffix, so that several units don't clash
 static String apSsid()
 {
-#ifdef WIFI_AP_SSID
-  return String(WIFI_AP_SSID);
-#else
-  #if defined(ESP8266)
-  uint32_t id = ESP.getChipId();
-  #else
-  uint32_t id = (uint32_t)(ESP.getEfuseMac() >> 32);
-  #endif
-  char buf[16];
-  snprintf(buf, sizeof(buf), "Liana-%04X", (unsigned)(id & 0xFFFF));
-  return String(buf);
-#endif
+  return String(WIFI_AP_SSID) + "-" + deviceSuffix();
 }
 
 void wifiSetUp()
@@ -58,10 +71,19 @@ void wifiSetUp()
 
   WiFi.persistent(true);
 
+  //the same name for DHCP (router's client list) and mDNS; must be set before connecting
+  String host = deviceHostName();
+#if defined(ESP8266)
+  WiFi.hostname(host);
+#else
+  WiFi.setHostname(host.c_str());
+#endif
+
   //in non-blocking mode, program will continue past this point without waiting
   persWM.begin();
 
-  if (!MDNS.begin(MDNS_NAME)) {
+  Serial.print("mDNS name: "); Serial.print(host); Serial.println(".local");
+  if (!MDNS.begin(host.c_str())) {
     Serial.println("Error starting MDNS");
   }
 

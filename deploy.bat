@@ -4,7 +4,8 @@ rem ---------------------------------------------------------------------------
 rem Builds the Liana firmware and the LittleFS image, then uploads both.
 rem
 rem   deploy.bat serial [COMx] [env]      upload over the COM port (auto-detected when omitted)
-rem   deploy.bat ota [ip-or-host] [env]   upload over WiFi (ArduinoOTA); default host liana.local
+rem   deploy.bat ota ip-or-host [env]   upload over WiFi (ArduinoOTA); the host is required:
+rem                                       the IP or liana-xxxxxx.local (printed to the COM port at startup)
 rem
 rem   env defaults to nodemcuv2, see platformio.ini for the list (esp32dev, d1_mini, ...).
 rem   OTA password: the firmware default is used unless OTA_PASSWORD is set in the environment.
@@ -28,11 +29,11 @@ if /i "%METHOD%"=="serial" goto build
 if /i "%METHOD%"=="ota" goto build
 echo Usage:
 echo   deploy.bat serial [COMx] [env]
-echo   deploy.bat ota [ip-or-host] [env]
+echo   deploy.bat ota ip-or-host [env]
 echo Examples:
 echo   deploy.bat serial COM5
 echo   deploy.bat ota 192.168.0.31
-echo   deploy.bat ota liana.local esp32dev
+echo   deploy.bat ota liana-a1b2c3.local esp32dev
 exit /b 2
 
 :build
@@ -58,7 +59,7 @@ call pio run -e %ENV% -t uploadfs %PORTARG% || goto fail
 goto done
 
 :ota
-if "%TARGET%"=="" set "TARGET=liana.local"
+if "%TARGET%"=="" (echo deploy.bat ota needs the IP or the liana-xxxxxx.local name of the unit & exit /b 2)
 set "PLATFORMIO_UPLOAD_PROTOCOL=espota"
 set "PLATFORMIO_UPLOAD_PORT=%TARGET%"
 set "PLATFORMIO_UPLOAD_FLAGS=--auth=%OTA_PASSWORD%, --port=8266"

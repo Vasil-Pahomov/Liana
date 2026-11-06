@@ -74,7 +74,7 @@ Liana — прошивка для ESP8266/ESP32, которая проигрыв
 
 ### 2.5 Сетевые интерфейсы
 
-**WiFi.** Библиотека PersWiFiManager: при отсутствии сохранённой сети поднимается открытая точка доступа (`WIFI_AP_SSID`) с captive portal (DNS-перехват), страница `wifi.htm` позволяет просканировать и выбрать сеть, запустить WPS, перезагрузить модуль. В сети модуль анонсируется по mDNS как `liana.local`.
+**WiFi.** Библиотека PersWiFiManager: при отсутствии сохранённой сети поднимается открытая точка доступа `<WIFI_AP_SSID>-XXXXXX` (по умолчанию `Liana-XXXXXX`, XXXXXX - последние 3 байта MAC) с captive portal (DNS-перехват), страница `wifi.htm` позволяет просканировать и выбрать сеть, запустить WPS, перезагрузить модуль. В сети модуль анонсируется по mDNS (и представляется DHCP-серверу) как `<MDNS_NAME>-xxxxxx`, по умолчанию `liana-xxxxxx.local`; то же имя задаётся ArduinoOTA, иначе `ArduinoOTA.begin()` перезапустил бы mDNS под именем `esp8266-…`.
 
 **HTTP (порт 80).** Статика раздаётся из SPIFFS, страницы `.htm` прогоняются через шаблонизатор `{{key}}`, где ключ подставляется из query-параметра или из `config.json`. Обработчики:
 
@@ -127,7 +127,7 @@ Liana — прошивка для ESP8266/ESP32, которая проигрыв
 | `NeoPixelWrapper.h` | Обёртка над шаблоном `NeoPixelBus`, выбор порядка цветов в рантайме | — |
 | `config.h` | Константы компиляции; всё, что зависит от устройства, переопределяется флагами `-D` из `platformio_local.ini` | — |
 | `fs_compat.h` | LittleFS на обеих платформах (`LIANA_FS`, `lianaFsBegin()`) | — |
-| `liana_wifi.h/.cpp` | PersWiFiManager, mDNS, SSID точки доступа `Liana-<chip id>`, инициализация web и ws | `persWM`, `dnsServer` |
+| `liana_wifi.h/.cpp` | PersWiFiManager, mDNS, имена `Liana-XXXXXX` / `liana-xxxxxx.local` с хвостом MAC (`deviceSuffix`, `deviceHostName`), инициализация web и ws | `persWM`, `dnsServer` |
 | `web.h/.cpp` | HTTP-сервер, раздача файлов, потоковый шаблонизатор `{{key}}` с экранированием, формы, `/api/*` | `webServer` |
 | `websocket.h/.cpp` | WebSocket-сервер, JSON-команды, рассылка состояния по `player.onChange` | `webSocket` |
 | `mqtt.h/.cpp` | PubSubClient, разбор команд | — |

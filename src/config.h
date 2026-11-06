@@ -63,8 +63,11 @@
 // --------------
 // WiFi config
 // --------------
-// SSID of the setup access point; when not defined, "Liana-" + chip id is used so that several units don't clash
-//#define WIFI_AP_SSID "Liana"
+// Both names get "-" + the last 3 bytes of the unit's MAC appended, so that several units don't clash:
+// the setup access point is "Liana-A1B2C3", the mDNS / DHCP host name is "liana-a1b2c3" (liana-a1b2c3.local).
+#ifndef WIFI_AP_SSID
+#define WIFI_AP_SSID "Liana"
+#endif
 #define WIFI_CONNECTION_TIMEOUT 10000  //Timeout (in milliseconds) of waiting for WiFi connection
 #ifndef MDNS_NAME
 #define MDNS_NAME "liana"

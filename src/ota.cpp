@@ -2,6 +2,7 @@
 #include "ota.h"
 #include "anim.h"
 #include "player.h"
+#include "liana_wifi.h"
 
 #ifdef SUPPORT_OTA
     #include <ArduinoOTA.h>
@@ -19,6 +20,8 @@ void otaSetUp(){
     Serial.println("OTA is setuping");
     ArduinoOTA.setPassword(OTA_PASSWORD);
     ArduinoOTA.setPort(8266);
+    //ArduinoOTA.begin() restarts mDNS under this name (default "esp8266-xxxxxx"/"esp32-xxxx"), keep ours
+    ArduinoOTA.setHostname(deviceHostName().c_str());
     ArduinoOTA.onStart([]() {
         otaShowProgressBar();
         Serial.println("OTA-Start");

@@ -5,7 +5,8 @@
 ;   -DSUPPORT_BUTTON=1 -DBUTTON_ON_OFF_PIN=21   on/off button
 ;   -DSUPPORT_LED_ON_OFF=1 -DLED_ON_OFF_PIN=2    indicator LED
 ;   -DLED_PIN=4                                  strip data pin
-;   -DWIFI_AP_SSID=\"Liana\"                     fixed setup AP name instead of Liana-<chip id>
+;   -DWIFI_AP_SSID=\"Lamp\"                      setup AP name prefix (Lamp-<MAC tail> instead of Liana-<MAC tail>)
+;   -DMDNS_NAME=\"lamp\"                         mDNS name prefix (lamp-<mac tail>.local instead of liana-<mac tail>.local)
 ;   -DOTA_PASSWORD=\"secret\"                    OTA password (default is in src/ota.h)
 ;   -DNIGHT_MODE_ENABLED=0                       night mode off unless enabled in config.json
 [esp]
